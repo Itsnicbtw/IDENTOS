@@ -8,6 +8,8 @@ This target uses Debian 13 (Trixie) and XFCE for an **actual graphical Linux liv
 - XFCE desktop, LightDM, Thunar, terminal and text editor
 - NetworkManager and Firefox ESR
 - A standard live-user session provided by Debian live-build
+- Developer essentials: GCC, Python 3, Git and Podman
+- Read-only hardware report through `identos-doctor` (storage, graphics, networking and memory)
 
 ## Building
 
