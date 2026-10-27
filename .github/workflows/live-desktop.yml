@@ -6,6 +6,7 @@ on:
       - 'scripts/build-live-iso.sh'
       - '.github/workflows/live-desktop.yml'
       - 'docs/live-desktop.md'
+      - 'scripts/check-live-boot-metadata.sh'
   pull_request:
     paths:
       - 'scripts/build-live-iso.sh'
@@ -33,6 +34,8 @@ jobs:
           test -s build/identos-live-amd64.iso
           (cd build && sha256sum -c identos-live-amd64.sha256)
           file build/identos-live-amd64.iso
+      - name: Verify boot catalog metadata
+        run: bash scripts/check-live-boot-metadata.sh
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
