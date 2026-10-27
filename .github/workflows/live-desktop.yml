@@ -1,0 +1,36 @@
+name: IDENT OS Live Desktop ISO
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/build-live-iso.sh'
+      - '.github/workflows/live-desktop.yml'
+      - 'docs/live-desktop.md'
+permissions:
+  contents: read
+jobs:
+  desktop-iso:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install live-build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y live-build debootstrap squashfs-tools xorriso isolinux syslinux-common
+      - name: Build live desktop image
+        run: sudo bash scripts/build-live-iso.sh
+      - name: Check output ISO and checksum
+        run: |
+          test -s build/identos-live-amd64.iso
+          (cd build && sha256sum -c identos-live-amd64.sha256)
+          file build/identos-live-amd64.iso
+      - name: Upload live desktop ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: identos-live-amd64
+          path: |
+            build/identos-live-amd64.iso
+            build/identos-live-amd64.sha256
+          retention-days: 7
+          if-no-files-found: error
