@@ -20,7 +20,7 @@ lb config --mode debian --distribution trixie --architectures amd64 \
   --iso-application 'IDENT OS Live Developer Edition' \
   --iso-volume 'IDENTOS_LIVE'
 mkdir -p config/package-lists config/includes.chroot/etc/identos config/includes.chroot/etc/skel
-mkdir -p config/includes.chroot/usr/local/bin config/includes.chroot/etc/xdg/xfce4/xfconf/xfce-perchannel-xml config/archives
+mkdir -p config/includes.chroot/usr/local/bin config/includes.chroot/usr/share/applications config/includes.chroot/etc/xdg/xfce4/xfconf/xfce-perchannel-xml config/archives
 cat > config/archives/trixie-security.list.chroot <<'EOF'
 deb http://security.debian.org/debian-security trixie-security main non-free-firmware
 EOF
@@ -94,6 +94,18 @@ for bin in git gcc python3 podman; do command -v "$bin" || true; done
 printf '\nThis report does not send data anywhere.\n'
 EOF
 chmod +x config/includes.chroot/usr/local/bin/identos-doctor
+# These eggs only run when invited. Unlike mandatory corporate fun.
+install -m 0755 "$ROOT/assets/identos-egg" config/includes.chroot/usr/local/bin/identos-egg
+cat > config/includes.chroot/usr/share/applications/identos-egg.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=IDENT OS: Very Important Utilities
+Comment=Pointless jokes, zero telemetry. The dream.
+Exec=xfce4-terminal --hold --command="identos-egg all"
+Icon=utilities-terminal
+Terminal=false
+Categories=Utility;
+EOF
 lb build
 IMAGE="$(find . -maxdepth 1 -name '*.hybrid.iso' -o -name '*.iso' | head -1)"
 [[ -n "$IMAGE" && -s "$IMAGE" ]] || { echo "ERROR: live-build created no ISO" >&2; exit 1; }
