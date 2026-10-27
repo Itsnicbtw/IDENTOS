@@ -1,0 +1,31 @@
+#!/bin/sh
+# IDENT OS early boot prototype. PID 1 in an isolated Linux VM.
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export PATH
+umask 022
+/bin/mount -t proc proc /proc 2>/dev/null || true
+/bin/mount -t sysfs sysfs /sys 2>/dev/null || true
+/bin/mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
+[ -c /dev/console ] || /bin/mknod -m 600 /dev/console c 5 1
+[ -c /dev/null ] || /bin/mknod -m 666 /dev/null c 1 3
+exec </dev/console >/dev/console 2>&1
+printf '\033[2J\033[H'
+printf 'IDENT OS | Alpha 0.0.1 | Linux boot prototype\n'
+printf 'No Windows compatibility or desktop environment yet.\n\n'
+printf 'Type help for commands.\n'
+while :; do
+  printf 'identos# '
+  if ! IFS= read -r command; then
+    /bin/sleep 1
+    continue
+  fi
+  case "$command" in
+    help) printf 'Commands: help, info, shell, reboot, poweroff\n' ;;
+    info) printf 'IDENT OS Alpha 0.0.1\nKernel: '; /bin/uname -r; printf 'Architecture: '; /bin/uname -m ;;
+    shell) /bin/sh -i </dev/console >/dev/console 2>&1 ;;
+    reboot) /bin/sync; /bin/reboot -f ;;
+    poweroff|halt) /bin/sync; /bin/poweroff -f ;;
+    '') : ;;
+    *) printf 'Unknown command. Type help or shell.\n' ;;
+  esac
+done
