@@ -1,13 +1,30 @@
-name: Initramfs checks
+name: IDENT OS developer build
 on:
   push:
   pull_request:
 jobs:
-  build:
+  build-and-boot:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
-      - name: Install prerequisites
-        run: sudo apt-get update && sudo apt-get install -y busybox cpio gzip
-      - name: Run checks
-        run: ./scripts/test.sh
+      - name: Install boot/build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y busybox cpio gzip qemu-system-x86 linux-image-virtual
+      - name: Build and validate initramfs
+        run: bash scripts/test.sh
+      - name: QEMU serial boot smoke test
+        run: |
+          KERNEL="$(find /boot -maxdepth 1 -name 'vmlinuz-*' -type f | head -1)"
+          test -n "$KERNEL"
+          KERNEL="$KERNEL" bash scripts/smoke-qemu.sh
+      - name: Publish developer boot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: identos-v1-initramfs-x86_64
+          path: build/identos-initramfs.cpio.gz
+          if-no-files-found: error
+          retention-days: 14
