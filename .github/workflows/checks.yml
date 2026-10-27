@@ -22,6 +22,13 @@ jobs:
         run: bash scripts/test-persistence.sh
       - name: Validate IDENT app packages
         run: python3 tests/test_idt.py
+      - name: Validate graphical VM launcher
+        run: |
+          bash scripts/boot-live-vm.sh --help
+          if bash scripts/boot-live-vm.sh --iso /dev/sda 2>/dev/null; then
+            echo 'ERROR: VM launcher accepted a physical device' >&2
+            exit 1
+          fi
       - name: Build bootable ISO
         run: |
           KERNEL_SOURCE="$(find /boot -maxdepth 1 -name 'vmlinuz-*-generic' -type f | head -1)"
