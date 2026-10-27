@@ -5,8 +5,10 @@ cd "$(dirname "$0")/.."
 ISO=build/identos-dev-x86_64.iso
 [[ -s "$ISO" ]] || { echo "ERROR: missing ISO: $ISO" >&2; exit 1; }
 for cmd in xorriso sha256sum; do command -v "$cmd" >/dev/null || { echo "ERROR: missing $cmd" >&2; exit 1; }; done
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
 for asset in /boot/grub/grub.cfg /boot/vmlinuz /boot/initramfs.gz; do
-  if ! xorriso -osirrox on -indev "$ISO" -extract "$asset" /dev/null >/dev/null 2>&1; then
+  if ! xorriso -osirrox on -indev "$ISO" -extract "$asset" "$TMP/$(basename "$asset")" >/dev/null 2>&1; then
     echo "ERROR: ISO missing $asset" >&2
     exit 1
   fi
