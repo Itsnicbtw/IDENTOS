@@ -9,6 +9,16 @@ umask 022
 [ -c /dev/console ] || /bin/mknod -m 600 /dev/console c 5 1
 [ -c /dev/null ] || /bin/mknod -m 666 /dev/null c 1 3
 exec </dev/console >/dev/console 2>&1
+mkdir -p /data
+if [ -b /dev/vda ]; then
+  if /bin/mount -t ext4 -o rw /dev/vda /data; then
+    printf 'Persistent data drive mounted at /data\n'
+  else
+    printf 'WARNING: persistent disk could not be mounted\n'
+  fi
+else
+  printf 'No persistent disk detected; session is ephemeral\n'
+fi
 printf '\033[2J\033[H'
 printf 'IDENT OS | Alpha 0.0.1 | Linux boot prototype\n'
 printf 'No Windows compatibility or desktop environment yet.\n\n'
@@ -20,8 +30,9 @@ while :; do
     continue
   fi
   case "$command" in
-    help) printf 'Commands: help, info, shell, reboot, poweroff\n' ;;
+    help) printf 'Commands: help, info, shell, storage, reboot, poweroff\n' ;;
     info) printf 'IDENT OS Alpha 0.0.1\nKernel: '; /bin/uname -r; printf 'Architecture: '; /bin/uname -m ;;
+    storage) /bin/mount | /bin/grep ' /data ' || printf 'No persistent data disk mounted\n' ;;
     shell) /bin/sh -i </dev/console >/dev/console 2>&1 ;;
     reboot) /bin/sync; /bin/reboot -f ;;
     poweroff|halt) /bin/sync; /bin/poweroff -f ;;
