@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Boots the graphical ISO with QEMU and checks kernel/live-boot serial output.
-# This does NOT claim a graphical login was reached; that requires a guest agent.
+# Gives the ISO 100 seconds to prove it can survive QEMU.
+# No, surviving QEMU doesn't make it a finished desktop. Nice try.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ISO="${ISO:-build/identos-live-amd64.iso}"
@@ -18,7 +18,6 @@ if [[ "$status" != 124 && "$status" != 0 ]]; then
   tail -80 "$LOG" >&2
   exit 1
 fi
-# The serial console may be silent unless the bootloader/kernel is configured
-# for serial output. Preserve the log for inspection without claiming full boot.
+# No fake victory lap: a quiet serial console proves very little.
 echo 'QEMU ran the ISO without crashing the emulator.'
 echo 'NOTE: this is a virtual-machine launch check, not a desktop-login assertion.'
