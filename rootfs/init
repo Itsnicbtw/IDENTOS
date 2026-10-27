@@ -30,9 +30,24 @@ while :; do
     continue
   fi
   case "$command" in
-    help) printf 'Commands: help, info, shell, storage, reboot, poweroff\n' ;;
+    help) printf 'Commands: help, info, shell, storage, save NAME TEXT, read NAME, reboot, poweroff\n' ;;
     info) printf 'IDENT OS Alpha 0.0.1\nKernel: '; /bin/uname -r; printf 'Architecture: '; /bin/uname -m ;;
     storage) /bin/mount | /bin/grep ' /data ' || printf 'No persistent data disk mounted\n' ;;
+    save\ *)
+      if ! /bin/mount | /bin/grep -q ' /data '; then printf 'Persistence unavailable\n'; continue; fi
+      entry="${command#save }"
+      name="${entry%% *}"
+      value="${entry#* }"
+      case "$name" in ''|*[!a-zA-Z0-9._-]*) printf 'Invalid filename\n'; continue;; esac
+      if [ "$entry" = "$name" ]; then printf 'Usage: save NAME TEXT\n'; continue; fi
+      printf '%s\n' "$value" > "/data/$name"
+      printf 'Saved to /data/%s\n' "$name"
+      ;;
+    read\ *)
+      name="${command#read }"
+      case "$name" in ''|*[!a-zA-Z0-9._-]*) printf 'Invalid filename\n'; continue;; esac
+      if [ -f "/data/$name" ]; then /bin/cat "/data/$name"; else printf 'Not found\n'; fi
+      ;;
     shell) /bin/sh -i </dev/console >/dev/console 2>&1 ;;
     reboot) /bin/sync; /bin/reboot -f ;;
     poweroff|halt) /bin/sync; /bin/poweroff -f ;;
