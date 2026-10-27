@@ -20,9 +20,11 @@ jobs:
           bash scripts/test.sh
       - name: Build bootable ISO
         run: |
-          KERNEL="$(find /boot -maxdepth 1 -name 'vmlinuz-*-generic' -type f -readable | head -1)"
-          test -n "$KERNEL"
-          KERNEL="$KERNEL" bash scripts/build-iso.sh
+          KERNEL_SOURCE="$(find /boot -maxdepth 1 -name 'vmlinuz-*-generic' -type f | head -1)"
+          test -n "$KERNEL_SOURCE"
+          sudo cp "$KERNEL_SOURCE" build-kernel
+          sudo chmod 644 build-kernel
+          KERNEL="$PWD/build-kernel" bash scripts/build-iso.sh
           file build/identos-dev-x86_64.iso
       - name: Smoke test ISO in QEMU
         run: |
