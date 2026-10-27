@@ -1,30 +1,44 @@
-name: IDENT OS developer build
+name: IDENT OS CI
 on:
   push:
   pull_request:
+permissions:
+  contents: read
 jobs:
   build-and-boot:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    permissions:
-      contents: read
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - name: Install boot/build dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y busybox cpio gzip qemu-system-x86 linux-image-virtual
-      - name: Build and validate initramfs
-        run: bash scripts/test.sh
-      - name: QEMU serial boot smoke test
+          sudo apt-get install -y busybox cpio gzip qemu-system-x86 grub-pc-bin grub-common xorriso mtools e2fsprogs linux-image-virtual
+      - name: Validate scripts and initramfs
+        run: |
+          bash -n scripts/*.sh
+          bash scripts/test.sh
+      - name: Build bootable ISO
         run: |
           KERNEL="$(find /boot -maxdepth 1 -name 'vmlinuz-*' -type f | head -1)"
           test -n "$KERNEL"
-          KERNEL="$KERNEL" bash scripts/smoke-qemu.sh
-      - name: Publish developer boot artifact
+          KERNEL="$KERNEL" bash scripts/build-iso.sh
+          file build/identos-dev-x86_64.iso
+      - name: Smoke test ISO in QEMU
+        run: |
+          set +e
+          timeout 70s bash scripts/run-iso.sh </dev/null >build/qemu-boot.log 2>&1
+          status=$?
+          set -e
+          cat build/qemu-boot.log
+          grep -Fq 'IDENT OS | Alpha 0.0.1 | Linux boot prototype' build/qemu-boot.log
+          grep -Fq 'identos#' build/qemu-boot.log
+          grep -Fq 'Persistent data drive mounted at /data' build/qemu-boot.log
+          echo "Boot smoke test passed (QEMU status: $status)"
+      - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
-          name: identos-v1-initramfs-x86_64
-          path: build/identos-initramfs.cpio.gz
+          name: identos-dev-x86_64-iso
+          path: build/identos-dev-x86_64.iso
           if-no-files-found: error
           retention-days: 14
