@@ -1,49 +1,46 @@
 # IDENT OS
 
-An experimental, open-source desktop operating-system project. The long-term goals are a custom Linux-based desktop, Windows application compatibility, and local-first, decentralised services. An independent kernel may be researched separately; it is **not** part of this boot image.
+[![IDENT OS CI](https://github.com/Itsnicbtw/IDENTOS/actions/workflows/checks.yml/badge.svg)](https://github.com/Itsnicbtw/IDENTOS/actions/workflows/checks.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/Original%20code-Apache--2.0-blue)](LICENSE)
+![Stage](https://img.shields.io/badge/stage-developer%20prototype-orange)
 
-## Alpha 0.0.1: boot foundation
+**IDENT OS** is an open-source, Linux-based operating-system experiment pursuing a new desktop, Windows application compatibility and optional decentralised services.
 
-This repository currently builds a minimal **x86-64 Linux initramfs** with BusyBox and a purpose-written `/init`. It is a bootable command-line engineering milestone, **not** a complete desktop OS, installer, secure operating environment, or Windows-compatible product.
+> **Status:** Developer prototype. The ISO is a minimal, root-operated command-line environment, not a secure installer, full desktop, or Windows replacement.
 
-### Requirements (Debian/Ubuntu host)
+## Build a bootable ISO
 
-```sh
+On a suitable Debian/Ubuntu **x86-64** build machine:
+
+```bash
 sudo apt-get update
-sudo apt-get install -y busybox cpio gzip file qemu-system-x86
+sudo apt-get install -y busybox cpio gzip qemu-system-x86 grub-pc-bin grub-common xorriso mtools e2fsprogs linux-image-amd64
+KERNEL="$(find /boot -maxdepth 1 -name 'vmlinuz-*' -type f | head -1)" bash scripts/build-iso.sh
+bash scripts/run-iso.sh
 ```
 
-A compatible **x86-64 Linux bzImage** is required. On a conventional Debian host it may be `/boot/vmlinuz-$(uname -r)`; ChromeOS Linux containers often do not expose a kernel image and will require one supplied explicitly. The initramfs builder bundles BusyBox's dynamically linked libraries when needed, from the build host. Only run images using libraries from a trusted system.
+The ISO is produced at `build/identos-dev-x86_64.iso`. QEMU automatically creates `build/identos-data.ext4` (256 MiB) when absent and attaches it as a virtual disk. IDENT OS mounts it at `/data` if the kernel supports virtio and ext4. Preserve that disk file across QEMU launches to retain files. The rest of the initramfs is temporary and resets on reboot.
 
-### Build and boot
+**On a Chromebook:** Run the GitHub Actions pipeline instead of using local storage. Successful builds produce a downloadable ISO artifact in the workflow run. The ChromeOS Linux container may not expose a usable kernel or support accelerated nested virtualisation.
 
-```sh
-./scripts/build-initramfs.sh
-KERNEL=/boot/vmlinuz-$(uname -r) ./scripts/run-qemu.sh
-```
+## Developer features
 
-If the kernel is elsewhere: `KERNEL=/path/to/x86_64/bzImage ./scripts/run-qemu.sh`.
+| Capability | Status |
+|---|---|
+| Bootable GRUB ISO | Source implemented; CI verification required |
+| Minimal Linux boot shell | Implemented |
+| Optional persistent ext4 /data | Implemented; runtime verification required |
+| Automated ISO/QEMU checks | Configured in GitHub Actions |
+| Desktop, installer, secure user sessions | Not implemented |
+| Wine, Proton and .exe support | Planned |
+| Peer-to-peer synchronisation | Planned |
 
-QEMU runs without disk or network by default. At the `identos#` prompt, try `help`, `info`, `mount`, `uname -a` and `poweroff`. Hit Ctrl+A then X to exit QEMU's `-nographic` console. You can also use `timeout 15 ./scripts/run-qemu.sh` for limited smoke testing.
+## Contribute
 
-### Checks
+**Public contributions are welcome.** Fork, create a topic branch and open a pull request. All PRs trigger the CI pipeline. See [CONTRIBUTING.md](CONTRIBUTING.md). Maintainers must review contributions before merging; CI runs alone do not automatically enforce merge restrictions.
 
-```sh
-./scripts/test.sh
-```
+To require review and passing checks, the repository owner must enable branch rulesets in GitHub Settings. See [contribution policy](CONTRIBUTING.md).
 
-### Architecture roadmap
+## Licensing
 
-1. **Boot and recovery:** initramfs, reproducible builds, hardware testing, verified updates.
-2. **Desktop:** Wayland compositor, shell, accessibility, settings, applications.
-3. **Compatibility:** Wine/Proton integration, per-application sandboxes, diagnostics.
-4. **Decentralisation:** optional encrypted local-first sync, signed peer-delivered updates and repository federation.
-5. **Independent kernel R&D:** isolated research only, with explicit interfaces and realistic driver cost.
-
-Security note: this minimal root shell is for isolated VM development only. Never deploy it as a multi-user system. No update signatures, hardened sandboxing, or secure boot chain exist yet.
-
-## Contributions and licensing
-
-The repository's existing root `LICENSE` is Apache License 2.0, applying to original project code unless otherwise indicated. Linux, BusyBox, Wine, and other third-party components retain their own licences; distributing an ISO with them requires complying with those licences and providing applicable source and notices. The kernel is GPL-2.0-only (with additional licensing nuances), not Apache-licensed.
-
-See [docs/architecture.md](docs/architecture.md) and [docs/milestones.md](docs/milestones.md).
+Original source files are under [Apache-2.0](LICENSE) unless otherwise indicated. Linux and BusyBox remain under their respective open-source licences. Kernel binaries included in the ISO and any further redistributions require appropriate notices and compliance with applicable GPL source-availability requirements.
