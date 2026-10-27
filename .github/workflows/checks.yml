@@ -20,6 +20,8 @@ jobs:
           bash scripts/test.sh
       - name: Verify safe persistence image
         run: bash scripts/test-persistence.sh
+      - name: Validate IDENT app packages
+        run: python3 tests/test_idt.py
       - name: Build bootable ISO
         run: |
           KERNEL_SOURCE="$(find /boot -maxdepth 1 -name 'vmlinuz-*-generic' -type f | head -1)"
