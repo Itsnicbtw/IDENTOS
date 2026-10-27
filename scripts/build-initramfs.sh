@@ -9,12 +9,12 @@ for c in cpio gzip ldd readlink find; do command -v "$c" >/dev/null || { echo "E
 case "$(uname -m)" in x86_64) ;; *) echo 'ERROR: x86-64 build host required for this milestone' >&2; exit 1;; esac
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
-mkdir -p "$WORK"/{bin,sbin,usr/bin,usr/sbin,proc,sys,dev,etc,tmp,run}
+mkdir -p "$WORK"/{bin,sbin,usr/bin,usr/sbin,proc,sys,dev,etc,tmp,run,data}
 chmod 1777 "$WORK/tmp"
 install -m 0755 rootfs/init "$WORK/init"
 install -m 0755 "$BUSYBOX" "$WORK/bin/busybox"
 # BusyBox applets via symlinks. All listed applets must exist in the bundled build.
-for app in sh mount mknod sleep uname sync reboot poweroff ls cat echo dmesg ps mkdir; do
+for app in sh mount mknod sleep uname sync reboot poweroff ls cat echo dmesg ps mkdir grep; do
   if ! "$BUSYBOX" --list | grep -Fxq "$app"; then echo "ERROR: BusyBox missing applet: $app" >&2; exit 1; fi
   ln -s busybox "$WORK/bin/$app"
 done
