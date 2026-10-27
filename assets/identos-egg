@@ -1,0 +1,49 @@
+#!/bin/sh
+# The official IDENT OS department of deeply unnecessary messages.
+# No network, no root, no file writes. The jokes are the only damage.
+set -eu
+
+show_help() {
+  cat <<'HELP'
+IDENT OS | Definitely Necessary Utilities
+Usage: identos-egg [help|fortune|coffee|corporate|sudo|secret|all]
+Nothing here sends data or changes your computer. Tragically, this is not a feature.
+HELP
+}
+
+fortune() {
+  printf '%s\n' 'IDENT OS: You have 47 tabs open. Your RAM has filed a complaint.'
+}
+coffee() {
+  printf '%s\n' 'Coffee status: 418 I am a teapot.' 'Engineer status: somehow still debugging.'
+}
+corporate() {
+  printf '%s\n' 'Enterprise Mode: The meeting could have been a shell script.' 'Synergy levels are legally classified as a biohazard.'
+}
+sudo_joke() {
+  printf '%s\n' 'Nice try. This joke does not grant root. We have standards. Occasionally.'
+}
+secret() {
+  printf '%s\n' 'Achievement unlocked: found the button nobody needed.' 'Reward: absolutely nothing, but now you know.'
+}
+
+case "${1:-help}" in
+  help|-h|--help) show_help ;;
+  fortune) fortune ;;
+  coffee) coffee ;;
+  corporate) corporate ;;
+  sudo) sudo_joke ;;
+  secret|konami) secret ;;
+  all)
+    fortune
+    coffee
+    corporate
+    sudo_joke
+    secret
+    ;;
+  *)
+    printf '%s\n' 'Unknown egg. The chickens have contacted HR.' >&2
+    show_help >&2
+    exit 2
+    ;;
+esac
