@@ -26,6 +26,7 @@ jobs:
           sudo chmod 644 build-kernel
           KERNEL="$PWD/build-kernel" bash scripts/build-iso.sh
           file build/identos-dev-x86_64.iso
+          bash scripts/verify-iso.sh
       - name: Smoke test ISO in QEMU
         run: |
           set +e
@@ -41,6 +42,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: identos-dev-x86_64-iso
-          path: build/identos-dev-x86_64.iso
+          path: |
+            build/identos-dev-x86_64.iso
+            build/SHA256SUMS
           if-no-files-found: error
           retention-days: 14
