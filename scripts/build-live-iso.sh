@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Build a Debian Live-based IDENT OS desktop ISO with live-build.
-# Requires Debian host with live-build, debootstrap, xorriso and squashfs-tools.
+# Builds the actual desktop, because a terminal with an ego isn't an OS.
+# Needs Debian live-build tools. Unfortunately, hardware demands software.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -20,13 +20,17 @@ lb config --mode debian --distribution trixie --architectures amd64 \
   --iso-application 'IDENT OS Live Developer Edition' \
   --iso-volume 'IDENTOS_LIVE'
 mkdir -p config/package-lists config/includes.chroot/etc/identos config/includes.chroot/etc/skel
-mkdir -p config/archives
+mkdir -p config/includes.chroot/usr/local/bin config/includes.chroot/etc/xdg/xfce4/xfconf/xfce-perchannel-xml config/archives
 cat > config/archives/trixie-security.list.chroot <<'EOF'
 deb http://security.debian.org/debian-security trixie-security main non-free-firmware
 EOF
 
 cat > config/package-lists/identos.list.chroot <<'EOF'
 task-xfce-desktop
+xserver-xorg-input-libinput
+xserver-xorg-video-all
+adwaita-icon-theme
+xcursor-themes
 lightdm
 network-manager
 network-manager-gnome
@@ -39,6 +43,28 @@ curl
 git
 ca-certificates
 openssh-client
+pciutils
+usbutils
+lshw
+mesa-utils
+inxi
+build-essential
+python3
+python3-venv
+podman
+EOF
+cat > config/includes.chroot/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xsettings" version="1.0">
+  <property name="Net" type="empty">
+    <property name="ThemeName" type="string" value="Adwaita"/>
+    <property name="IconThemeName" type="string" value="Adwaita"/>
+  </property>
+  <property name="Gtk" type="empty">
+    <property name="CursorThemeName" type="string" value="Adwaita"/>
+    <property name="CursorThemeSize" type="int" value="24"/>
+  </property>
+</channel>
 EOF
 cat > config/includes.chroot/etc/identos/release <<'EOF'
 IDENT OS Live Developer Edition
@@ -52,6 +78,22 @@ kernel OS. Use the terminal and file manager as on a normal Debian desktop.
 Persistence requires a separate partition named 'persistence' with a
 persistence.conf file; see docs/live-desktop.md in the source repository.
 EOF
+cat > config/includes.chroot/usr/local/bin/identos-doctor <<'EOF'
+#!/bin/sh
+# Diagnoses the machine without uploading its entire life story.
+set -u
+printf 'IDENT OS | hardware and development diagnostics\n'
+printf 'Kernel: '; uname -sr
+printf 'Machine: '; uname -m
+printf '\nStorage:\n'; lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS 2>/dev/null || true
+printf '\nGraphics:\n'; lspci 2>/dev/null | grep -Ei 'VGA|Display|3D' || true
+printf '\nNetwork devices:\n'; lspci 2>/dev/null | grep -Ei 'Network|Ethernet|Wireless' || true
+printf '\nMemory:\n'; free -h 2>/dev/null || true
+printf '\nDevelopment tools:\n'
+for bin in git gcc python3 podman; do command -v "$bin" || true; done
+printf '\nThis report does not send data anywhere.\n'
+EOF
+chmod +x config/includes.chroot/usr/local/bin/identos-doctor
 lb build
 IMAGE="$(find . -maxdepth 1 -name '*.hybrid.iso' -o -name '*.iso' | head -1)"
 [[ -n "$IMAGE" && -s "$IMAGE" ]] || { echo "ERROR: live-build created no ISO" >&2; exit 1; }
