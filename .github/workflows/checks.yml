@@ -20,7 +20,7 @@ jobs:
           bash scripts/test.sh
       - name: Build bootable ISO
         run: |
-          KERNEL="$(find /boot -maxdepth 1 -name 'vmlinuz-*' -type f | head -1)"
+          KERNEL="$(find /boot -maxdepth 1 -name 'vmlinuz-*-generic' -type f -readable | head -1)"
           test -n "$KERNEL"
           KERNEL="$KERNEL" bash scripts/build-iso.sh
           file build/identos-dev-x86_64.iso
