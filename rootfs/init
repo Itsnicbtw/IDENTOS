@@ -113,12 +113,12 @@ while :; do
       fi
       /bin/rm -- "/data/$name" && printf 'Deleted %s\n' "$name"
       ;;
-    nano\\ *)
-      if ! has_storage; then printf 'Persistence unavailable\\n'; continue; fi
+    nano\ *)
+      if ! has_storage; then printf 'Persistence unavailable\n'; continue; fi
       name="${command#nano }"
-      if ! valid_name "$name"; then printf 'Invalid filename\\n'; continue; fi
+      if ! valid_name "$name"; then printf 'Invalid filename\n'; continue; fi
       if [ -L "/data/$name" ] || [ -d "/data/$name" ]; then
-        printf 'Refusing to edit a link or directory\\n'
+        printf 'Refusing to edit a link or directory\n'
         continue
       fi
       /bin/nano --ignorercfiles --restricted "/data/$name"
