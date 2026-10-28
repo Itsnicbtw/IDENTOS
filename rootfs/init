@@ -1,14 +1,16 @@
 #!/bin/sh
-# IDENT OS early boot prototype. PID 1 in an isolated Linux VM.
+# IDENT OS early boot. PID 1 inside the VM, not the host.
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export PATH
 umask 022
+
 /bin/mount -t proc proc /proc 2>/dev/null || true
 /bin/mount -t sysfs sysfs /sys 2>/dev/null || true
 /bin/mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
 [ -c /dev/console ] || /bin/mknod -m 600 /dev/console c 5 1
 [ -c /dev/null ] || /bin/mknod -m 666 /dev/null c 1 3
 exec </dev/console >/dev/console 2>&1
+
 mkdir -p /data
 if [ -b /dev/vda ]; then
   if /bin/mount -t ext4 -o rw /dev/vda /data; then
@@ -19,36 +21,97 @@ if [ -b /dev/vda ]; then
 else
   printf 'No persistent disk detected; session is ephemeral\n'
 fi
+
+# Shared validator for commands touching the persistent disk.
+# No slashes, no dot navigation, no surprise paths outside /data.
+valid_name() {
+  case "$1" in
+    ''|.|..|*[!a-zA-Z0-9._-]*) return 1 ;;
+    *) return 0 ;;
+  esac
+}
+has_storage() {
+  /bin/mount | /bin/grep -q ' /data '
+}
+
 printf '\033[2J\033[H'
 printf 'IDENT OS | Alpha 0.0.1 | Linux boot prototype\n'
 printf 'No Windows compatibility or desktop environment yet.\n\n'
 printf 'Type help for commands.\n'
+
 while :; do
   printf 'identos# '
   if ! IFS= read -r command; then
     /bin/sleep 1
     continue
   fi
+
   case "$command" in
-    help) printf 'Commands: help, info, shell, storage, save NAME TEXT, read NAME, reboot, poweroff\n' ;;
-    info) printf 'IDENT OS Alpha 0.0.1\nKernel: '; /bin/uname -r; printf 'Architecture: '; /bin/uname -m ;;
-    storage) /bin/mount | /bin/grep ' /data ' || printf 'No persistent data disk mounted\n' ;;
+    help)
+      printf 'Commands: help, info, memory, uptime, devices, clear, shell\n'
+      printf '          storage, files, save NAME TEXT, read NAME, delete NAME\n'
+      printf '          reboot, poweroff\n'
+      ;;
+    info)
+      printf 'IDENT OS Alpha 0.0.1\nKernel: '
+      /bin/uname -r
+      printf 'Architecture: '
+      /bin/uname -m
+      ;;
+    memory)
+      /bin/grep -E '^(MemTotal|MemFree|MemAvailable|SwapTotal):' /proc/meminfo
+      ;;
+    uptime)
+      printf 'Kernel uptime (seconds): '
+      /bin/cat /proc/uptime
+      ;;
+    devices)
+      printf 'Block devices:\n'
+      /bin/cat /proc/partitions
+      ;;
+    clear)
+      printf '\033[2J\033[H'
+      ;;
+    storage)
+      /bin/mount | /bin/grep ' /data ' || printf 'No persistent data disk mounted\n'
+      ;;
+    files)
+      if has_storage; then /bin/ls -la /data; else printf 'Persistence unavailable\n'; fi
+      ;;
     save\ *)
-      if ! /bin/mount | /bin/grep -q ' /data '; then printf 'Persistence unavailable\n'; continue; fi
+      if ! has_storage; then printf 'Persistence unavailable\n'; continue; fi
       entry="${command#save }"
       name="${entry%% *}"
       value="${entry#* }"
-      case "$name" in ''|*[!a-zA-Z0-9._-]*) printf 'Invalid filename\n'; continue;; esac
+      if ! valid_name "$name"; then printf 'Invalid filename\n'; continue; fi
       if [ "$entry" = "$name" ]; then printf 'Usage: save NAME TEXT\n'; continue; fi
+      # Never follow a link outside /data, even if one was planted from the shell.
+      if [ -L "/data/$name" ] || [ -d "/data/$name" ]; then
+        printf 'Refusing to overwrite a link or directory\n'
+        continue
+      fi
       printf '%s\n' "$value" > "/data/$name"
       printf 'Saved to /data/%s\n' "$name"
       ;;
     read\ *)
       name="${command#read }"
-      case "$name" in ''|*[!a-zA-Z0-9._-]*) printf 'Invalid filename\n'; continue;; esac
+      if ! valid_name "$name"; then printf 'Invalid filename\n'; continue; fi
+      if [ -L "/data/$name" ]; then printf 'Refusing to read a link\n'; continue; fi
       if [ -f "/data/$name" ]; then /bin/cat "/data/$name"; else printf 'Not found\n'; fi
       ;;
-    shell) /bin/sh -i </dev/console >/dev/console 2>&1 ;;
+    delete\ *)
+      if ! has_storage; then printf 'Persistence unavailable\n'; continue; fi
+      name="${command#delete }"
+      if ! valid_name "$name"; then printf 'Invalid filename\n'; continue; fi
+      if [ -L "/data/$name" ] || [ ! -f "/data/$name" ]; then
+        printf 'Not a regular file\n'
+        continue
+      fi
+      /bin/rm -- "/data/$name" && printf 'Deleted %s\n' "$name"
+      ;;
+    shell)
+      /bin/sh -i </dev/console >/dev/console 2>&1
+      ;;
     reboot) /bin/sync; /bin/reboot -f ;;
     poweroff|halt) /bin/sync; /bin/poweroff -f ;;
     '') : ;;
