@@ -16,7 +16,7 @@ image=build/identos-initramfs.cpio.gz
 test -s "$image"
 gzip -t "$image"
 listing="$(gzip -dc "$image" | cpio -t 2>/dev/null)"
-for path in init bin/busybox bin/sh; do
+for path in init bin/busybox bin/sh bin/nano usr/share/terminfo/v/vt100; do
   if ! printf '%s\n' "$listing" | sed 's#^\\./##' | grep -Fxq "$path"; then
     echo "ERROR: initramfs missing $path" >&2
     exit 1
