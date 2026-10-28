@@ -16,7 +16,7 @@ cd "$WORK"
 lb config --mode debian --distribution trixie --architectures amd64 \
   --binary-images iso-hybrid --debian-installer none \
   --bootappend-live 'boot=live components persistence quiet' \
-  --archive-areas 'main non-free-firmware' --security false \
+  --archive-areas 'main non-free-firmware' \
   --iso-application 'IDENT OS Live Developer Edition' \
   --iso-volume 'IDENTOS_LIVE'
 mkdir -p config/package-lists config/includes.chroot/etc/identos config/includes.chroot/etc/skel
@@ -28,6 +28,9 @@ EOF
 cat > config/package-lists/identos.list.chroot <<'EOF'
 task-xfce-desktop
 xfce4-goodies
+xfce4-whiskermenu-plugin
+xfce4-notifyd
+xfce4-power-manager
 xserver-xorg-input-libinput
 xserver-xorg-video-all
 xserver-xorg-video-qxl
@@ -52,6 +55,7 @@ pciutils
 usbutils
 lshw
 mesa-utils
+mesa-vulkan-drivers
 inxi
 build-essential
 python3
@@ -190,6 +194,66 @@ Terminal=false
 Categories=System;
 EOF
 chmod +x config/includes.chroot/etc/skel/Desktop/identos-terminal.desktop
+
+# Default desktop artwork and useful diagnostics for the graphical edition.
+mkdir -p config/includes.chroot/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml
+mkdir -p config/includes.chroot/usr/share/backgrounds/identos
+cat > config/includes.chroot/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-desktop" version="1.0">
+  <property name="backdrop" type="empty">
+    <property name="screen0" type="empty">
+      <property name="monitor0" type="empty">
+        <property name="workspace0" type="empty">
+          <property name="last-image" type="string" value="/usr/share/backgrounds/identos/identos.svg"/>
+          <property name="image-style" type="int" value="5"/>
+        </property>
+      </property>
+    </property>
+  </property>
+</channel>
+EOF
+cat > config/includes.chroot/usr/share/backgrounds/identos/identos.svg <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080">
+<defs><linearGradient id="b" x2="1" y2="1"><stop stop-color="#101523"/><stop offset="1" stop-color="#26395b"/></linearGradient></defs>
+<rect width="1920" height="1080" fill="url(#b)"/>
+<circle cx="1510" cy="470" r="390" fill="#5474aa" opacity=".10"/>
+<text x="100" y="920" fill="#e7edf8" font-family="sans-serif" font-size="70" font-weight="700">IDENT OS</text>
+<text x="104" y="970" fill="#a9bbd7" font-family="sans-serif" font-size="26">Developer Live Edition</text>
+</svg>
+EOF
+cat > config/includes.chroot/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfwm4.xml <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfwm4" version="1.0">
+  <property name="general" type="empty">
+    <property name="theme" type="string" value="Default"/>
+    <property name="use_compositing" type="bool" value="true"/>
+    <property name="workspace_count" type="int" value="4"/>
+  </property>
+</channel>
+EOF
+cat > config/includes.chroot/usr/local/bin/identos-graphics-check <<'EOF'
+#!/bin/sh
+set -u
+echo "IDENT OS graphics check"
+printf 'Session: %s\n' "$XDG_CURRENT_DESKTOP"
+printf 'Display: %s\n' "$DISPLAY"
+command -v Xorg || true
+command -v xfce4-session || true
+command -v firefox-esr || true
+command -v glxinfo >/dev/null 2>&1 && glxinfo -B 2>/dev/null || true
+echo "Graphics diagnostics complete."
+EOF
+chmod +x config/includes.chroot/usr/local/bin/identos-graphics-check
+cat > config/includes.chroot/usr/share/applications/identos-graphics-check.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=IDENT OS Graphics Diagnostics
+Exec=xfce4-terminal --hold --command=identos-graphics-check
+Icon=video-display
+Terminal=false
+Categories=System;
+EOF
 lb build
 IMAGE="$(find . -maxdepth 1 -name '*.hybrid.iso' -o -name '*.iso' | head -1)"
 [[ -n "$IMAGE" && -s "$IMAGE" ]] || { echo "ERROR: live-build created no ISO" >&2; exit 1; }
