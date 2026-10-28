@@ -38,8 +38,6 @@ feh
 imagemagick
 xserver-xorg-input-libinput
 xserver-xorg-video-all
-xserver-xorg-video-qxl
-xserver-xorg-video-fbdev
 adwaita-icon-theme
 xcursor-themes
 lightdm
@@ -49,7 +47,6 @@ sudo
 firefox-esr
 zenity
 xdg-utils
-thunar
 mousepad
 curl
 git
