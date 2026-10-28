@@ -38,7 +38,7 @@ while IFS= read -r lib; do
   [[ -f "$lib" ]] || { echo "ERROR: nano library missing: $lib" >&2; exit 1; }
   mkdir -p "$WORK$(dirname "$lib")"
   cp -L "$lib" "$WORK$lib"
-done < <(ldd "$NANO" | awk '{ for (i=1;i<=NF;i++) if ($i ~ /^\\//) print $i }' | sort -u)
+done < <(ldd "$NANO" | awk '{ for (i=1;i<=NF;i++) if ($i ~ /^\//) print $i }' | sort -u)
 # Nano's curses frontend needs this, even in a QEMU serial session.
 TERMINFO_FILE=""
 for candidate in /lib/terminfo/v/vt100 /usr/share/terminfo/v/vt100; do
