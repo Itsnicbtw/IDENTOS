@@ -33,6 +33,8 @@ python3-tk
 x11-xserver-utils
 xterm
 pcmanfm
+rofi
+feh
 xserver-xorg-input-libinput
 xserver-xorg-video-all
 xserver-xorg-video-qxl
@@ -68,7 +70,7 @@ nano
 vim
 podman
 EOF
-cat > config/includes.chroot/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml <<'EOF'
+cat > config/includes.chroot/etc/identos/xsettings-unused.xml <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <channel name="xsettings" version="1.0">
   <property name="Net" type="empty">
@@ -88,7 +90,7 @@ Purpose: experimental Linux desktop foundation
 EOF
 cat > config/includes.chroot/etc/skel/README-IDENTOS.txt <<'EOF'
 Welcome to IDENT OS Live.
-This is an experimental Debian/XFCE live desktop, not a secure or independent
+This is an experimental Debian/IDENT live desktop, not a secure or independent
 kernel OS. Use the terminal and file manager as on a normal Debian desktop.
 Persistence requires a separate partition named 'persistence' with a
 persistence.conf file; see docs/live-desktop.md in the source repository.
@@ -197,9 +199,8 @@ EOF
 chmod +x config/includes.chroot/etc/skel/Desktop/identos-terminal.desktop
 
 # Default desktop artwork and useful diagnostics for the graphical edition.
-mkdir -p config/includes.chroot/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml
 mkdir -p config/includes.chroot/usr/share/backgrounds/identos
-cat > config/includes.chroot/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml <<'EOF'
+cat > config/includes.chroot/etc/identos/xfce4-desktop-unused.xml <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <channel name="xfce4-desktop" version="1.0">
   <property name="backdrop" type="empty">
@@ -223,7 +224,7 @@ cat > config/includes.chroot/usr/share/backgrounds/identos/identos.svg <<'EOF'
 <text x="104" y="970" fill="#a9bbd7" font-family="sans-serif" font-size="26">Developer Live Edition</text>
 </svg>
 EOF
-cat > config/includes.chroot/etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfwm4.xml <<'EOF'
+cat > config/includes.chroot/etc/identos/xfwm4-unused.xml <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <channel name="xfwm4" version="1.0">
   <property name="general" type="empty">
