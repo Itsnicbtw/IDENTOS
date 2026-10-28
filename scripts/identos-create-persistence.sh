@@ -29,4 +29,11 @@ printf '%s\n' '/ union' | debugfs -w -R 'write /dev/stdin persistence.conf' "$ou
 }
 trap - ERR
 echo "Created file-backed persistence image: $output"
+echo "This is a live overlay, NOT an installed OS or encrypted storage."tmp="$(mktemp)"
+trap 'rm -f "$tmp"; rm -f -- "$output"' ERR
+printf '%s\n' '/ union' > "$tmp"
+debugfs -w -R "write $tmp persistence.conf" "$output" >/dev/null 2>&1
+rm -f "$tmp"
+trap - ERR
+echo "Created file-backed persistence image: $output"
 echo "This is a live overlay, NOT an installed OS or encrypted storage."
