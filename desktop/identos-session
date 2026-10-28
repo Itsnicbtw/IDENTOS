@@ -5,7 +5,7 @@ export XDG_CURRENT_DESKTOP=IDENT
 export XDG_SESSION_DESKTOP=identos
 xsetroot -solid '#101523' 2>/dev/null || true
 if command -v feh >/dev/null 2>&1 && [ -f /usr/share/backgrounds/identos/identos.png ]; then
-  feh --bg-fill /usr/share/backgrounds/identos/identos.svg 2>/dev/null || true
+  feh --bg-fill /usr/share/backgrounds/identos/identos.png 2>/dev/null || true
 fi
 openbox &
 wm_pid=$!
