@@ -19,6 +19,8 @@ jobs:
           sudo apt-get install -y live-build debootstrap squashfs-tools xorriso qemu-system-x86
       - name: Validate builder
         run: bash -n scripts/build-live-iso.sh
+      - name: Check IDENT desktop Python syntax
+        run: python3 -m py_compile desktop/identos-panel.py
       - name: Build graphical ISO
         run: sudo bash scripts/build-live-iso.sh
       - name: Verify built ISO
@@ -34,7 +36,9 @@ jobs:
           rootfs="$(find build/iso-check/live -maxdepth 1 -name '*.squashfs' | head -1)"
           test -n "$rootfs"
           unsquashfs -ll "$rootfs" > build/graphics-rootfs-files.txt
-          grep -Fq 'usr/bin/xfce4-session' build/graphics-rootfs-files.txt
+          grep -Fq 'usr/bin/openbox' build/graphics-rootfs-files.txt
+          grep -Fq 'usr/local/bin/identos-panel' build/graphics-rootfs-files.txt
+          grep -Fq 'usr/share/xsessions/identos.desktop' build/graphics-rootfs-files.txt
           grep -Fq 'usr/bin/firefox-esr' build/graphics-rootfs-files.txt
           grep -Fq 'usr/local/bin/identos-browser' build/graphics-rootfs-files.txt
       - name: Headless QEMU kernel boot check
