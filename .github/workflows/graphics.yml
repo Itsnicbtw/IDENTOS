@@ -33,9 +33,10 @@ jobs:
           xorriso -osirrox on -indev build/identos-live-amd64.iso -extract /live build/iso-check/live
           rootfs="$(find build/iso-check/live -maxdepth 1 -name '*.squashfs' | head -1)"
           test -n "$rootfs"
-          unsquashfs -ll "$rootfs" | grep -Fq 'usr/bin/xfce4-session'
-          unsquashfs -ll "$rootfs" | grep -Fq 'usr/bin/firefox-esr'
-          unsquashfs -ll "$rootfs" | grep -Fq 'usr/local/bin/identos-browser'
+          unsquashfs -ll "$rootfs" > build/graphics-rootfs-files.txt
+          grep -Fq 'usr/bin/xfce4-session' build/graphics-rootfs-files.txt
+          grep -Fq 'usr/bin/firefox-esr' build/graphics-rootfs-files.txt
+          grep -Fq 'usr/local/bin/identos-browser' build/graphics-rootfs-files.txt
       - name: Headless QEMU kernel boot check
         run: bash scripts/smoke-graphics-qemu.sh
       - name: Publish live ISO artifact
