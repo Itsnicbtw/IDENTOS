@@ -75,7 +75,7 @@ The graphical live image includes an Xorg/XFCE desktop, graphical login, mouse a
 
 ## Graphics build verification
 
-The separate **IDENT OS Graphical Live ISO** GitHub Actions workflow attempts a complete Debian live-build on graphical changes or manual dispatch. It publishes an ISO artifact only when the build completes. A successful build is not a substitute for manually verifying LightDM, XFCE, GPU rendering, mouse input and the Firefox launcher in QEMU.
+The separate **IDENT OS Graphical Live ISO** GitHub Actions workflow attempts a complete Debian live-build on graphical changes or manual dispatch. It publishes an ISO artifact only when the build completes. The workflow also checks for the XFCE session and browser launcher in the compressed filesystem and runs a headless QEMU kernel-boot smoke test. These checks do not prove that the graphical login, compositor, mouse or Firefox actually work; those require an interactive QEMU session.
 
 The graphical desktop includes IDENT wallpaper, XFCE window compositing, mouse and keyboard support through Xorg/libinput, and an `identos-graphics-check` command for diagnosing display/session availability.
 
