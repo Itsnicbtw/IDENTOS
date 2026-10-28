@@ -22,5 +22,8 @@ for path in init bin/busybox bin/sh bin/nano bin/python3 bin/node bin/git bin/gc
     exit 1
   fi
 done
-if ! grep -Eq '(^|\\./)(usr/)?bin/npm\n'
- <<< "$listing"; then\n  echo 'ERROR: initramfs missing npm executable' >&2\n  exit 1\nfi\nprintf 'PASS: shell syntax, image generation and archive contents\n'
+if ! grep -Eq '^(\./)?(usr/)?bin/npm$' <<< "$listing"; then
+  echo 'ERROR: initramfs missing npm executable' >&2
+  exit 1
+fi
+printf 'PASS: shell syntax, image generation and archive contents\n'
