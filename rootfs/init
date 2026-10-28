@@ -10,6 +10,8 @@ export HOME
 export PYTHONHOME
 PYTHONDONTWRITEBYTECODE=1
 export PYTHONDONTWRITEBYTECODE
+PYTHONPATH=/usr/lib/python3/dist-packages:/usr/local/lib/python3/dist-packages
+export PYTHONPATH
 umask 022
 
 /bin/mount -t proc proc /proc 2>/dev/null || true
