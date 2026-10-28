@@ -2,6 +2,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 bash -n scripts/build-initramfs.sh scripts/run-qemu.sh scripts/test.sh scripts/smoke-qemu.sh scripts/build-live-iso.sh
+for browser in firefox chrome tor aster; do
+  grep -Fq "ident.browser=$browser" scripts/build-iso.sh
+  grep -Fq "ident.browser=$browser" rootfs/init
+done
 sh -n assets/identos-egg
 for egg in help fortune coffee corporate sudo secret all; do
   sh assets/identos-egg "$egg" >/dev/null
