@@ -2,6 +2,16 @@
 # IDENT OS early boot. PID 1 inside the VM, not the host.
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export PATH
+TERM=vt100
+export TERM
+HOME=/data
+export HOME
+[ -f /etc/identos-runtime ] && . /etc/identos-runtime
+export PYTHONHOME
+PYTHONDONTWRITEBYTECODE=1
+export PYTHONDONTWRITEBYTECODE
+PYTHONPATH=/usr/lib/python3/dist-packages:/usr/local/lib/python3/dist-packages
+export PYTHONPATH
 umask 022
 
 /bin/mount -t proc proc /proc 2>/dev/null || true
@@ -37,6 +47,21 @@ has_storage() {
 printf '\033[2J\033[H'
 printf 'IDENT OS | Alpha 0.0.1 | Linux boot prototype\n'
 printf 'No Windows compatibility or desktop environment yet.\n\n'
+# Record requested browser without pretending the text-only image can launch it.
+browser_choice=""
+for param in $(/bin/cat /proc/cmdline); do
+  case "$param" in
+    ident.browser=firefox) browser_choice="Firefox" ;;
+    ident.browser=chrome) browser_choice="Google Chrome" ;;
+    ident.browser=tor) browser_choice="Tor Browser" ;;
+    ident.browser=aster) browser_choice="Aster" ;;
+  esac
+done
+if [ -n "$browser_choice" ]; then
+  printf 'Requested browser: %s\n' "$browser_choice"
+  printf 'Browser launch not available: graphical desktop and browser packages are not installed.\n'
+  printf 'Starting developer console instead.\n\n'
+fi
 printf 'Type help for commands.\n'
 
 while :; do
@@ -108,6 +133,29 @@ while :; do
         continue
       fi
       /bin/rm -- "/data/$name" && printf 'Deleted %s\n' "$name"
+      ;;
+    nano\ *)
+      if ! has_storage; then printf 'Persistence unavailable\n'; continue; fi
+      name="${command#nano }"
+      if ! valid_name "$name"; then printf 'Invalid filename\n'; continue; fi
+      if [ -L "/data/$name" ] || [ -d "/data/$name" ]; then
+        printf 'Refusing to edit a link or directory\n'
+        continue
+      fi
+      /bin/nano --ignorercfiles --restricted "/data/$name"
+      ;;
+    python3) /bin/python3 ;;
+    node) /bin/node ;;
+    python3\ *|node\ *)
+      runtime="${command%% *}"
+      name="${command#* }"
+      if ! valid_name "$name"; then printf 'Invalid filename\n'; continue; fi
+      if ! has_storage; then printf 'Persistence unavailable\n'; continue; fi
+      if [ -L "/data/$name" ] || [ ! -f "/data/$name" ]; then
+        printf 'Not a regular script file\n'
+        continue
+      fi
+      "/bin/$runtime" "/data/$name"
       ;;
     shell)
       /bin/sh -i </dev/console >/dev/console 2>&1
