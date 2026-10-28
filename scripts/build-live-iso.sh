@@ -16,7 +16,7 @@ cd "$WORK"
 lb config --mode debian --distribution trixie --architectures amd64 \
   --binary-images iso-hybrid --debian-installer none \
   --bootappend-live 'boot=live components persistence quiet' \
-  --archive-areas 'main non-free-firmware' \
+  --archive-areas 'main non-free-firmware' --security false \
   --iso-application 'IDENT OS Live Developer Edition' \
   --iso-volume 'IDENTOS_LIVE'
 mkdir -p config/package-lists config/includes.chroot/etc/identos config/includes.chroot/etc/skel
