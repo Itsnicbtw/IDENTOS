@@ -10,17 +10,19 @@ permissions:
 jobs:
   graphical-iso:
     runs-on: ubuntu-24.04
+    container:
+      image: debian:trixie
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - name: Install Debian live build dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y live-build debootstrap squashfs-tools xorriso qemu-system-x86
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y live-build debootstrap squashfs-tools xorriso qemu-system-x86 file git ca-certificates
       - name: Validate builder
         run: bash -n scripts/build-live-iso.sh
       - name: Build graphical ISO
-        run: sudo bash scripts/build-live-iso.sh
+        run: bash scripts/build-live-iso.sh
       - name: Verify built ISO
         run: |
           test -s build/identos-live-amd64.iso
