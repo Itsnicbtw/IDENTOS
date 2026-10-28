@@ -14,7 +14,7 @@ chmod 1777 "$WORK/tmp"
 install -m 0755 rootfs/init "$WORK/init"
 install -m 0755 "$BUSYBOX" "$WORK/bin/busybox"
 # BusyBox applets via symlinks. All listed applets must exist in the bundled build.
-for app in sh mount mknod sleep uname sync reboot poweroff ls cat echo dmesg ps mkdir grep; do
+for app in sh mount mknod sleep uname sync reboot poweroff ls cat echo dmesg ps mkdir grep rm; do
   if ! "$BUSYBOX" --list | grep -Fxq "$app"; then echo "ERROR: BusyBox missing applet: $app" >&2; exit 1; fi
   ln -s busybox "$WORK/bin/$app"
 done
