@@ -15,7 +15,7 @@ trap 'rm -rf "$WORK"' EXIT
 cd "$WORK"
 lb config --mode debian --distribution trixie --architectures amd64 \
   --binary-images iso-hybrid --debian-installer none \
-  --bootappend-live 'boot=live components persistence quiet' \
+  --bootappend-live 'boot=live components persistence console=tty0 console=ttyS0,115200n8' \
   --archive-areas 'main non-free-firmware' \
   --iso-application 'IDENT OS Live Developer Edition' \
   --iso-volume 'IDENTOS_LIVE'
