@@ -31,7 +31,7 @@ The ISO is produced at `build/identos-dev-x86_64.iso`. QEMU automatically create
 | Minimal Linux boot shell and diagnostics | Implemented: memory, uptime, block devices |
 | Optional persistent ext4 /data | Implemented; runtime verification required |
 | Persistent file commands | save/read/files/delete/nano in the boot console |
-| Python 3 and Node.js | Bundled command-line runtimes; package managers not included |\n| Automated ISO/QEMU checks | Configured in GitHub Actions |
+| Python 3 and Node.js | Bundled command-line runtimes |\n| Developer toolchain | Git, GCC/G++, Make, curl, tar, npm and pip modules bundled; runtime verification pending |\n| Automated ISO/QEMU checks | Configured in GitHub Actions |
 | Desktop, installer, secure user sessions | Not implemented |
 | Wine, Proton and .exe support | Planned |
 | Peer-to-peer synchronisation | Planned |
@@ -51,7 +51,7 @@ nano hello.js
 node hello.js
 ```
 
-This is an offline, minimal boot image. `pip`, `npm`, the Node package ecosystem and a full Linux development toolchain are **not** installed. Runtime versions depend on the CI build host. Complex modules needing extra system data or dependencies may require further packaging and testing.
+The development image now attempts to include Git, GCC/G++, Make, curl, tar, npm and Python pip modules without a separate user installation. This substantially increases the image size. Toolchains and package managers rely on many filesystem conventions, network facilities and certificates that the small initramfs may still lack. **Installed in the image does not mean verified functional:** CI boot and compile/package-manager tests are still required before declaring this a complete development environment.
 
 ## Contribute
 
