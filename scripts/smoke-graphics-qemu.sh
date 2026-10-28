@@ -10,7 +10,7 @@ for bin in qemu-system-x86_64 xorriso timeout; do
 done
 mkdir -p "$ROOT/build"
 WORK="$(mktemp -d "$ROOT/build/qemu-kernel.XXXXXX")"
-trap 'rm -rf "$WORK"' EXIT
+trap 'chmod -R u+w "$WORK" 2>/dev/null || true; rm -rf "$WORK"' EXIT
 LOG="$ROOT/build/graphics-boot.log"
 xorriso -osirrox on -indev "$ISO" -extract /live "$WORK/live" >"$WORK/extract.log" 2>&1 || {
   cat "$WORK/extract.log" >&2; exit 1;
