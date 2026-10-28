@@ -26,11 +26,13 @@ deb http://security.debian.org/debian-security trixie-security main non-free-fir
 EOF
 
 cat > config/package-lists/identos.list.chroot <<'EOF'
-task-xfce-desktop
-xfce4-goodies
-xfce4-whiskermenu-plugin
-xfce4-notifyd
-xfce4-power-manager
+openbox
+xorg
+xserver-xorg-core
+python3-tk
+x11-xserver-utils
+xterm
+pcmanfm
 xserver-xorg-input-libinput
 xserver-xorg-video-all
 xserver-xorg-video-qxl
@@ -45,7 +47,6 @@ firefox-esr
 zenity
 xdg-utils
 thunar
-xfce4-terminal
 mousepad
 curl
 git
@@ -115,7 +116,7 @@ cat > config/includes.chroot/usr/share/applications/identos-egg.desktop <<'EOF'
 Type=Application
 Name=IDENT OS: Very Important Utilities
 Comment=Pointless jokes, zero telemetry. The dream.
-Exec=xfce4-terminal --hold --command="identos-egg all"
+Exec=xterm -hold -e identos-egg all
 Icon=utilities-terminal
 Terminal=false
 Categories=Utility;
@@ -128,7 +129,7 @@ mkdir -p config/includes.chroot/etc/lightdm/lightdm.conf.d
 
 cat > config/includes.chroot/etc/lightdm/lightdm.conf.d/60-identos.conf <<'EOF'
 [Seat:*]
-user-session=xfce
+user-session=identos
 greeter-hide-users=false
 EOF
 
@@ -188,7 +189,7 @@ cat > config/includes.chroot/etc/skel/Desktop/identos-terminal.desktop <<'EOF'
 Version=1.0
 Type=Application
 Name=Terminal
-Exec=xfce4-terminal
+Exec=xterm
 Icon=utilities-terminal
 Terminal=false
 Categories=System;
@@ -239,7 +240,7 @@ echo "IDENT OS graphics check"
 printf 'Session: %s\n' "$XDG_CURRENT_DESKTOP"
 printf 'Display: %s\n' "$DISPLAY"
 command -v Xorg || true
-command -v xfce4-session || true
+command -v openbox || true
 command -v firefox-esr || true
 command -v glxinfo >/dev/null 2>&1 && glxinfo -B 2>/dev/null || true
 echo "Graphics diagnostics complete."
@@ -249,10 +250,24 @@ cat > config/includes.chroot/usr/share/applications/identos-graphics-check.deskt
 [Desktop Entry]
 Type=Application
 Name=IDENT OS Graphics Diagnostics
-Exec=xfce4-terminal --hold --command=identos-graphics-check
+Exec=xterm -hold -e identos-graphics-check
 Icon=video-display
 Terminal=false
 Categories=System;
+EOF
+
+# This is the real desktop session, not an XFCE panel with a new wallpaper.
+mkdir -p config/includes.chroot/usr/share/xsessions
+install -m 0755 "$ROOT/desktop/identos-panel.py" config/includes.chroot/usr/local/bin/identos-panel
+install -m 0755 "$ROOT/desktop/identos-session" config/includes.chroot/usr/local/bin/identos-session
+cat > config/includes.chroot/usr/share/xsessions/identos.desktop <<'EOF'
+[Desktop Entry]
+Name=IDENT Desktop
+Comment=IDENT OS desktop shell
+Exec=/usr/local/bin/identos-session
+TryExec=/usr/local/bin/identos-session
+Type=Application
+DesktopNames=IDENT
 EOF
 lb build
 IMAGE="$(find . -maxdepth 1 -name '*.hybrid.iso' -o -name '*.iso' | head -1)"
