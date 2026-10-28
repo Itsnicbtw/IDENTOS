@@ -30,7 +30,8 @@ The ISO is produced at `build/identos-dev-x86_64.iso`. QEMU automatically create
 | Bootable GRUB ISO | Source implemented; CI verification required |
 | Minimal Linux boot shell and diagnostics | Implemented: memory, uptime, block devices |
 | Optional persistent ext4 /data | Implemented; runtime verification required |
-| Persistent file commands | save/read/files/delete/nano in the boot console |\n| Automated ISO/QEMU checks | Configured in GitHub Actions |
+| Persistent file commands | save/read/files/delete/nano in the boot console |
+| Python 3 and Node.js | Bundled command-line runtimes; package managers not included |\n| Automated ISO/QEMU checks | Configured in GitHub Actions |
 | Desktop, installer, secure user sessions | Not implemented |
 | Wine, Proton and .exe support | Planned |
 | Peer-to-peer synchronisation | Planned |
@@ -38,6 +39,19 @@ The ISO is produced at `build/identos-dev-x86_64.iso`. QEMU automatically create
 ## Boot console\n\nAt the `identos#` prompt, try `help`, `memory`, `uptime`, `devices`, `storage`, or `files`. With a persistent disk attached, `save hello hello-world`, `read hello`, and `delete hello` manage files in `/data`. `shell` opens the BusyBox shell. This is a development console running as root, not a secure multiuser terminal.\n\n## Text editor
 
 The boot ISO includes GNU Nano. With the persistent QEMU disk mounted, type `nano notes.txt` at the `identos#` prompt to edit `/data/notes.txt`. Use Ctrl+O to save and Ctrl+X to exit. The Nano command accepts simple filenames only; it will not edit arbitrary host paths. From `shell`, use `nano /data/notes.txt` directly. The image currently uses a serial VT100 terminal, so the editor is text-only.
+
+## Python and Node.js
+
+The development image bundles the build host's Python 3 runtime, standard library and Node.js executable with their linked libraries. Use `python3` or `node` for their interactive environments, or edit scripts on the persistent drive and run them from the `identos#` prompt:
+
+```text
+nano hello.py
+python3 hello.py
+nano hello.js
+node hello.js
+```
+
+This is an offline, minimal boot image. `pip`, `npm`, the Node package ecosystem and a full Linux development toolchain are **not** installed. Runtime versions depend on the CI build host. Complex modules needing extra system data or dependencies may require further packaging and testing.
 
 ## Contribute
 
