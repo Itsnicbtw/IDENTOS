@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """IDENT Desktop: intentionally small shell, not a pretend window manager."""
-import os
 import shutil
 import subprocess
 import tkinter as tk
@@ -54,6 +53,8 @@ action("◆  IDENT", show_menu)
 action("Terminal", lambda: launch("xterm"))
 action("Files", lambda: launch("pcmanfm"))
 action("Browser", lambda: launch("identos-browser"))
+action("Switch window", lambda: launch("rofi", "-show", "window"))
+action("Applications", lambda: launch("rofi", "-show", "drun"))
 
 clock = tk.Label(bar, bg=PANEL, fg=TEXT, padx=20, font=("DejaVu Sans", 10))
 clock.pack(side="right")
@@ -66,7 +67,7 @@ def layout(event=None):
     height = root.winfo_screenheight()
     root.geometry(f"{width}x44+0+{height-44}")
 
-root.bind("<Configure>", lambda event: None)
+root.bind("<Control-Alt-Tab>", lambda event: launch("rofi", "-show", "window"))
 layout()
 tick()
 root.mainloop()
