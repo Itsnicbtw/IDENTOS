@@ -73,6 +73,12 @@ The graphical live image includes an Xorg/XFCE desktop, graphical login, mouse a
 
 **Limitations:** This live ISO has not been built or boot-tested in this change. It is a Debian-based experimental desktop, not an independent kernel or a fully hardened production OS. The other compact ISO remains a text console. Graphical VM needs a display-capable environment and sufficient RAM. Live persistence needs separate configuration.
 
+## Graphics build verification
+
+The separate **IDENT OS Graphical Live ISO** GitHub Actions workflow attempts a complete Debian live-build on graphical changes or manual dispatch. It publishes an ISO artifact only when the build completes. A successful build is not a substitute for manually verifying LightDM, XFCE, GPU rendering, mouse input and the Firefox launcher in QEMU.
+
+The graphical desktop includes IDENT wallpaper, XFCE window compositing, mouse and keyboard support through Xorg/libinput, and an `identos-graphics-check` command for diagnosing display/session availability.
+
 ## Contribute
 
 **Public contributions are welcome.** Fork, create a topic branch and open a pull request. All PRs trigger the CI pipeline. See [CONTRIBUTING.md](CONTRIBUTING.md). Maintainers must review contributions before merging; CI runs alone do not automatically enforce merge restrictions.
