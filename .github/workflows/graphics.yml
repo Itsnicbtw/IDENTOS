@@ -1,4 +1,4 @@
-name: IDENT OS Graphical Live ISO
+name: IDENT OS Primary Graphical ISO
 on:
   workflow_dispatch:
   pull_request:
@@ -41,6 +41,8 @@ jobs:
           grep -Fq 'usr/share/xsessions/identos.desktop' build/graphics-rootfs-files.txt
           grep -Fq 'usr/bin/firefox-esr' build/graphics-rootfs-files.txt
           grep -Fq 'usr/local/bin/identos-browser' build/graphics-rootfs-files.txt
+          grep -Fq 'usr/local/bin/identos-session' build/graphics-rootfs-files.txt
+          grep -Fq 'usr/share/backgrounds/identos/identos.png' build/graphics-rootfs-files.txt
       - name: Headless QEMU kernel boot check
         run: bash scripts/smoke-graphics-qemu.sh
       - name: Publish live ISO artifact
