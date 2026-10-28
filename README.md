@@ -59,6 +59,20 @@ GRUB now provides a **Browser selection (preview)** submenu for Firefox, Google 
 
 The current ISO does not ship a display server, graphical session, or browser binaries. Those must be integrated and tested before these entries can launch browsers. Aster is intentionally reserved until an approved, compatible build is available. Tor Browser also requires careful profile isolation, networking and privacy validation before it can be provided as a default browsing environment.
 
+## Graphical Live Desktop
+
+For the graphical IDENT OS image use the **separate Debian Live/XFCE build**, not the minimal serial-console ISO:
+
+```bash
+sudo apt-get install live-build debootstrap squashfs-tools xorriso
+sudo bash scripts/build-live-iso.sh
+bash scripts/boot-live-vm.sh
+```
+
+The graphical live image includes an Xorg/XFCE desktop, graphical login, mouse and keyboard drivers, terminal, file manager, Firefox ESR, browser selection utility, Python 3, Node.js, npm, pip, Git and build tools. The browser chooser launches Firefox ESR; Chrome, Tor Browser and Aster are only offered if installed, otherwise an explicit unavailable message is shown. No browser download is performed automatically. Aster remains a future integration.
+
+**Limitations:** This live ISO has not been built or boot-tested in this change. It is a Debian-based experimental desktop, not an independent kernel or a fully hardened production OS. The other compact ISO remains a text console. Graphical VM needs a display-capable environment and sufficient RAM. Live persistence needs separate configuration.
+
 ## Contribute
 
 **Public contributions are welcome.** Fork, create a topic branch and open a pull request. All PRs trigger the CI pipeline. See [CONTRIBUTING.md](CONTRIBUTING.md). Maintainers must review contributions before merging; CI runs alone do not automatically enforce merge restrictions.
