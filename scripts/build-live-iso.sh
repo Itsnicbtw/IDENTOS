@@ -27,8 +27,11 @@ EOF
 
 cat > config/package-lists/identos.list.chroot <<'EOF'
 task-xfce-desktop
+xfce4-goodies
 xserver-xorg-input-libinput
 xserver-xorg-video-all
+xserver-xorg-video-qxl
+xserver-xorg-video-fbdev
 adwaita-icon-theme
 xcursor-themes
 lightdm
@@ -36,6 +39,8 @@ network-manager
 network-manager-gnome
 sudo
 firefox-esr
+zenity
+xdg-utils
 thunar
 xfce4-terminal
 mousepad
@@ -51,6 +56,11 @@ inxi
 build-essential
 python3
 python3-venv
+python3-pip
+nodejs
+npm
+nano
+vim
 podman
 EOF
 cat > config/includes.chroot/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml <<'EOF'
@@ -106,6 +116,80 @@ Icon=utilities-terminal
 Terminal=false
 Categories=Utility;
 EOF
+
+# Usable graphical defaults, with browser selection that never claims missing
+# proprietary or privacy-sensitive browsers are magically installed.
+mkdir -p config/includes.chroot/etc/skel/Desktop
+mkdir -p config/includes.chroot/etc/lightdm/lightdm.conf.d
+
+cat > config/includes.chroot/etc/lightdm/lightdm.conf.d/60-identos.conf <<'EOF'
+[Seat:*]
+user-session=xfce
+greeter-hide-users=false
+EOF
+
+cat > config/includes.chroot/usr/local/bin/identos-browser <<'EOF'
+#!/bin/sh
+# Selection is separate from installation: don't silently fetch executables.
+set -eu
+choice="$(zenity --list --title='IDENT OS | Browser' --text='Choose a browser' \
+  --column='Browser' 'Firefox' 'Google Chrome' 'Tor Browser' 'Aster' \
+  --height=300 --width=420 2>/dev/null)" || exit 0
+case "$choice" in
+  Firefox)
+    command -v firefox-esr >/dev/null 2>&1 && exec firefox-esr
+    ;;
+  'Google Chrome')
+    for cmd in google-chrome-stable google-chrome; do
+      command -v "$cmd" >/dev/null 2>&1 && exec "$cmd"
+    done
+    ;;
+  'Tor Browser')
+    command -v torbrowser-launcher >/dev/null 2>&1 && exec torbrowser-launcher
+    ;;
+  Aster)
+    command -v aster >/dev/null 2>&1 && exec aster
+    ;;
+  *) exit 0 ;;
+esac
+zenity --warning --title='Browser unavailable' \
+  --text="$choice is not included in this build. Firefox ESR is preinstalled." 2>/dev/null || true
+EOF
+chmod +x config/includes.chroot/usr/local/bin/identos-browser
+cat > config/includes.chroot/usr/share/applications/identos-browser.desktop <<'EOF'
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=IDENT OS Browser Selection
+Comment=Choose an available browser
+Exec=identos-browser
+Icon=web-browser
+Terminal=false
+Categories=Network;WebBrowser;
+EOF
+cat > config/includes.chroot/etc/skel/Desktop/identos-browser.desktop <<'EOF'
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Choose Browser
+Exec=identos-browser
+Icon=web-browser
+Terminal=false
+Categories=Network;
+EOF
+chmod +x config/includes.chroot/etc/skel/Desktop/identos-browser.desktop
+
+cat > config/includes.chroot/etc/skel/Desktop/identos-terminal.desktop <<'EOF'
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Terminal
+Exec=xfce4-terminal
+Icon=utilities-terminal
+Terminal=false
+Categories=System;
+EOF
+chmod +x config/includes.chroot/etc/skel/Desktop/identos-terminal.desktop
 lb build
 IMAGE="$(find . -maxdepth 1 -name '*.hybrid.iso' -o -name '*.iso' | head -1)"
 [[ -n "$IMAGE" && -s "$IMAGE" ]] || { echo "ERROR: live-build created no ISO" >&2; exit 1; }
