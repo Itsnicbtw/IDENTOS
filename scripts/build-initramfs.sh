@@ -5,7 +5,7 @@ ROOT="$PWD"
 OUT="$ROOT/build"
 BUSYBOX="${BUSYBOX:-$(command -v busybox || true)}"
 [[ -n "$BUSYBOX" && -f "$BUSYBOX" ]] || { echo 'ERROR: Install busybox or set BUSYBOX=/path/to/busybox' >&2; exit 1; }
-for c in cpio gzip ldd readlink find; do command -v "$c" >/dev/null || { echo "ERROR: missing $c" >&2; exit 1; }; done
+for c in cpio gzip ldd readlink find nano; do command -v "$c" >/dev/null || { echo "ERROR: missing $c" >&2; exit 1; }; done
 case "$(uname -m)" in x86_64) ;; *) echo 'ERROR: x86-64 build host required for this milestone' >&2; exit 1;; esac
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
@@ -30,6 +30,24 @@ else
   done < <(ldd "$BUSYBOX" | awk '{ for (i=1;i<=NF;i++) if ($i ~ /^\//) print $i }' | sort -u)
   # Dynamic libraries can themselves be symlinks, hence cp -L.
 fi
+# Nano is an actual editor, not a pretend BusyBox alias.
+# Include its shared libraries plus a real terminfo definition for the serial console.
+NANO="$(command -v nano)"
+install -m 0755 "$NANO" "$WORK/bin/nano"
+while IFS= read -r lib; do
+  [[ -f "$lib" ]] || { echo "ERROR: nano library missing: $lib" >&2; exit 1; }
+  mkdir -p "$WORK$(dirname "$lib")"
+  cp -L "$lib" "$WORK$lib"
+done < <(ldd "$NANO" | awk '{ for (i=1;i<=NF;i++) if ($i ~ /^\//) print $i }' | sort -u)
+# Nano's curses frontend needs this, even in a QEMU serial session.
+TERMINFO_FILE=""
+for candidate in /lib/terminfo/v/vt100 /usr/share/terminfo/v/vt100; do
+  if [[ -f "$candidate" ]]; then TERMINFO_FILE="$candidate"; break; fi
+done
+[[ -n "$TERMINFO_FILE" ]] || { echo 'ERROR: missing vt100/xterm terminfo definition' >&2; exit 1; }
+mkdir -p "$WORK/usr/share/terminfo/v"
+# Always expose the descriptor as vt100, whatever the build host provides.
+cp -L "$TERMINFO_FILE" "$WORK/usr/share/terminfo/v/vt100"
 mkdir -p "$OUT"
 ( cd "$WORK" && find . -print0 | LC_ALL=C sort -z | cpio --null -o --format=newc 2>/dev/null | gzip -n -9 ) > "$OUT/identos-initramfs.cpio.gz"
 printf 'Created %s\n' "$OUT/identos-initramfs.cpio.gz"
