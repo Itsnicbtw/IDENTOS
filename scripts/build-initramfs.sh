@@ -121,7 +121,8 @@ done
 # Debian/Ubuntu distribute npm across /usr/share/nodejs and its entry script.
 NPM="$(command -v npm)"
 mkdir -p "$WORK/usr/bin"
-install -m 0755 -L "$NPM" "$WORK/usr/bin/npm"
+cp -L "$NPM" "$WORK/usr/bin/npm"
+chmod 0755 "$WORK/usr/bin/npm"
 if [[ -d /usr/share/nodejs ]]; then
   mkdir -p "$WORK/usr/share/nodejs"
   cp -a /usr/share/nodejs/. "$WORK/usr/share/nodejs/"
