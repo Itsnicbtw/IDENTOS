@@ -69,7 +69,7 @@ sudo bash scripts/build-live-iso.sh
 bash scripts/boot-live-vm.sh
 ```
 
-The graphical live image includes an Xorg/XFCE desktop, graphical login, mouse and keyboard drivers, terminal, file manager, Firefox ESR, browser selection utility, Python 3, Node.js, npm, pip, Git and build tools. The browser chooser launches Firefox ESR; Chrome, Tor Browser and Aster are only offered if installed, otherwise an explicit unavailable message is shown. No browser download is performed automatically. Aster remains a future integration.
+The graphical live image includes a custom IDENT Desktop session over Xorg/Openbox, graphical login, mouse and keyboard drivers, terminal, file manager, Firefox ESR, browser selection utility, Python 3, Node.js, npm, pip, Git and build tools. The browser chooser launches Firefox ESR; Chrome, Tor Browser and Aster are only offered if installed, otherwise an explicit unavailable message is shown. No browser download is performed automatically. Aster remains a future integration.
 
 **Limitations:** This live ISO has not been built or boot-tested in this change. It is a Debian-based experimental desktop, not an independent kernel or a fully hardened production OS. The other compact ISO remains a text console. Graphical VM needs a display-capable environment and sufficient RAM. Live persistence needs separate configuration.
 
@@ -77,7 +77,11 @@ The graphical live image includes an Xorg/XFCE desktop, graphical login, mouse a
 
 The separate **IDENT OS Graphical Live ISO** GitHub Actions workflow attempts a complete Debian live-build on graphical changes or manual dispatch. It publishes an ISO artifact only when the build completes. The workflow also checks for the XFCE session and browser launcher in the compressed filesystem and runs a headless QEMU kernel-boot smoke test. These checks do not prove that the graphical login, compositor, mouse or Firefox actually work; those require an interactive QEMU session.
 
-The graphical desktop includes IDENT wallpaper, XFCE window compositing, mouse and keyboard support through Xorg/libinput, and an `identos-graphics-check` command for diagnosing display/session availability.
+The graphical desktop uses IDENT's own Python/Tk panel, launcher, clock and desktop session, with Openbox handling window management and Xorg/libinput handling mouse and keyboard, and an `identos-graphics-check` command for diagnosing display/session availability.
+
+## IDENT Desktop architecture
+
+The graphical live image uses LightDM to start the `IDENT Desktop` session (`/usr/local/bin/identos-session`). The IDENT-owned shell (`desktop/identos-panel.py`) provides the bottom panel, application menu, clock and terminal/files/browser launchers. **It replaces XFCE as the default desktop session.** Openbox is still used for window movement, decorations and focus, and Xorg supplies rendering and input. This is a first working shell implementation, not a homegrown compositor or fully independent display server. Screen and interactive boot verification remain outstanding.
 
 ## Contribute
 
