@@ -24,10 +24,11 @@ image=build/identos-initramfs.cpio.gz
 test -s "$image"
 gzip -t "$image"
 listing="$(gzip -dc "$image" | cpio -t 2>/dev/null)"
-for path in init bin/busybox bin/sh bin/nano bin/python3 bin/node bin/git bin/gcc bin/g++ bin/make bin/curl bin/tar usr/bin/npm etc/identos-runtime usr/share/terminfo/v/vt100; do
+for path in init bin/busybox bin/sh bin/nano bin/python3 bin/node bin/git bin/gcc bin/g++ bin/make bin/curl bin/tar etc/identos-runtime usr/share/terminfo/v/vt100; do
   if ! grep -Fxq "$path" <<< "$listing" && ! grep -Fxq "./$path" <<< "$listing"; then
     echo "ERROR: initramfs missing $path" >&2
     exit 1
   fi
 done
-printf 'PASS: shell syntax, image generation and archive contents\n'
+if ! grep -Eq '(^|\\./)(usr/)?bin/npm\n'
+ <<< "$listing"; then\n  echo 'ERROR: initramfs missing npm executable' >&2\n  exit 1\nfi\nprintf 'PASS: shell syntax, image generation and archive contents\n'
