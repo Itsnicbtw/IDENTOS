@@ -235,6 +235,7 @@ mkdir -p config/includes.chroot/usr/share/xsessions
 install -m 0755 "$ROOT/desktop/identos-panel.py" config/includes.chroot/usr/local/bin/identos-panel
 install -m 0755 "$ROOT/desktop/identos-session" config/includes.chroot/usr/local/bin/identos-session
 install -m 0755 "$ROOT/desktop/identos-benchmark.sh" config/includes.chroot/usr/local/bin/identos-benchmark
+install -m 0755 "$ROOT/system/identos-capabilities.py" config/includes.chroot/usr/local/bin/identos-capabilities
 cat > config/includes.chroot/usr/share/xsessions/identos.desktop <<'EOF'
 [Desktop Entry]
 Name=IDENT Desktop
