@@ -6,6 +6,10 @@ TERM=vt100
 export TERM
 HOME=/data
 export HOME
+[ -f /etc/identos-runtime ] && . /etc/identos-runtime
+export PYTHONHOME
+PYTHONDONTWRITEBYTECODE=1
+export PYTHONDONTWRITEBYTECODE
 umask 022
 
 /bin/mount -t proc proc /proc 2>/dev/null || true
@@ -122,6 +126,19 @@ while :; do
         continue
       fi
       /bin/nano --ignorercfiles --restricted "/data/$name"
+      ;;
+    python3) /bin/python3 ;;
+    node) /bin/node ;;
+    python3\ *|node\ *)
+      runtime="${command%% *}"
+      name="${command#* }"
+      if ! valid_name "$name"; then printf 'Invalid filename\n'; continue; fi
+      if ! has_storage; then printf 'Persistence unavailable\n'; continue; fi
+      if [ -L "/data/$name" ] || [ ! -f "/data/$name" ]; then
+        printf 'Not a regular script file\n'
+        continue
+      fi
+      "/bin/$runtime" "/data/$name"
       ;;
     shell)
       /bin/sh -i </dev/console >/dev/console 2>&1
