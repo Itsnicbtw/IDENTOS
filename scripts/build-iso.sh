@@ -10,7 +10,7 @@ if [[ -z "$KERNEL" ]]; then
 fi
 [[ -n "$KERNEL" && -f "$KERNEL" ]] || { echo 'ERROR: KERNEL=/path/to/vmlinuz is required' >&2; exit 1; }
 for cmd in grub-mkrescue xorriso; do command -v "$cmd" >/dev/null || { echo "ERROR: install $cmd" >&2; exit 1; }; done
-./scripts/build-initramfs.sh
+IDENT_INITRAMFS_PROFILE=boot ./scripts/build-initramfs.sh
 mkdir -p build
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
