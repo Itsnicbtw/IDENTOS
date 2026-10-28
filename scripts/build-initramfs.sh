@@ -49,6 +49,9 @@ mkdir -p "$WORK/usr/share/terminfo/v"
 # Always expose the descriptor as vt100, whatever the build host provides.
 cp -L "$TERMINFO_FILE" "$WORK/usr/share/terminfo/v/vt100"
 
+# The serial recovery ISO uses a compact initramfs. Full tools belong in the
+# separately built developer archive and graphical live filesystem.
+if [[ "${IDENT_INITRAMFS_PROFILE:-full}" != "boot" ]]; then
 # Python and Node run inside the guest, not on the host. Bundle their
 # binaries AND runtime dependencies, otherwise all you built is an error message.
 copy_libs() {
@@ -143,6 +146,7 @@ if [[ -d /usr/local/lib/python3/dist-packages ]]; then
   mkdir -p "$WORK/usr/local/lib/python3/dist-packages"
   cp -a /usr/local/lib/python3/dist-packages/. "$WORK/usr/local/lib/python3/dist-packages/"
 fi
+fi # full development toolchain
 mkdir -p "$OUT"
 ( cd "$WORK" && find . -print0 | LC_ALL=C sort -z | cpio --null -o --format=newc 2>/dev/null | gzip -n -9 ) > "$OUT/identos-initramfs.cpio.gz"
 printf 'Created %s\n' "$OUT/identos-initramfs.cpio.gz"
