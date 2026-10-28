@@ -28,14 +28,14 @@ The ISO is produced at `build/identos-dev-x86_64.iso`. QEMU automatically create
 | Capability | Status |
 |---|---|
 | Bootable GRUB ISO | Source implemented; CI verification required |
-| Minimal Linux boot shell | Implemented |
+| Minimal Linux boot shell and diagnostics | Implemented: memory, uptime, block devices |
 | Optional persistent ext4 /data | Implemented; runtime verification required |
-| Automated ISO/QEMU checks | Configured in GitHub Actions |
+| Persistent file commands | save/read/files/delete in the boot console |\n| Automated ISO/QEMU checks | Configured in GitHub Actions |
 | Desktop, installer, secure user sessions | Not implemented |
 | Wine, Proton and .exe support | Planned |
 | Peer-to-peer synchronisation | Planned |
 
-## Contribute
+## Boot console\n\nAt the `identos#` prompt, try `help`, `memory`, `uptime`, `devices`, `storage`, or `files`. With a persistent disk attached, `save hello hello-world`, `read hello`, and `delete hello` manage files in `/data`. `shell` opens the BusyBox shell. This is a development console running as root, not a secure multiuser terminal.\n\n## Contribute
 
 **Public contributions are welcome.** Fork, create a topic branch and open a pull request. All PRs trigger the CI pipeline. See [CONTRIBUTING.md](CONTRIBUTING.md). Maintainers must review contributions before merging; CI runs alone do not automatically enforce merge restrictions.
 
