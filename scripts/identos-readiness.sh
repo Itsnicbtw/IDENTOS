@@ -2,6 +2,7 @@
 # Deterministic, non-destructive preflight for the experimental IDENT OS desktop.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
 mode="${1:---host}"
 case "$mode" in --host|--image|--help) ;; *) echo "Usage: $0 [--host|--image|--help]" >&2; exit 2;; esac
 if [[ "$mode" == --help ]]; then
