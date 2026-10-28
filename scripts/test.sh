@@ -6,6 +6,10 @@ for browser in firefox chrome tor aster; do
   grep -Fq "ident.browser=$browser" scripts/build-iso.sh
   grep -Fq "ident.browser=$browser" rootfs/init
 done
+bash -n scripts/build-live-iso.sh
+for marker in 'task-xfce-desktop' 'lightdm' 'firefox-esr' 'identos-browser' 'xserver-xorg-input-libinput'; do
+  grep -Fq "$marker" scripts/build-live-iso.sh
+done
 sh -n assets/identos-egg
 for egg in help fortune coffee corporate sudo secret all; do
   sh assets/identos-egg "$egg" >/dev/null
