@@ -7,7 +7,7 @@ for browser in firefox chrome tor aster; do
   grep -Fq "ident.browser=$browser" rootfs/init
 done
 bash -n scripts/build-live-iso.sh
-for marker in 'task-xfce-desktop' 'lightdm' 'firefox-esr' 'identos-browser' 'xserver-xorg-input-libinput'; do
+for marker in 'openbox' 'python3-tk' 'identos-panel' 'lightdm' 'firefox-esr' 'identos-browser' 'xserver-xorg-input-libinput'; do
   grep -Fq "$marker" scripts/build-live-iso.sh
 done
 sh -n assets/identos-egg
@@ -25,7 +25,7 @@ test -s "$image"
 gzip -t "$image"
 listing="$(gzip -dc "$image" | cpio -t 2>/dev/null)"
 for path in init bin/busybox bin/sh bin/nano bin/python3 bin/node bin/git bin/gcc bin/g++ bin/make bin/curl bin/tar usr/bin/npm etc/identos-runtime usr/share/terminfo/v/vt100; do
-  if ! printf '%s\n' "$listing" | sed 's#^\\./##' | grep -Fxq "$path"; then
+  if ! grep -Fxq "./$path" <<< "$listing"; then
     echo "ERROR: initramfs missing $path" >&2
     exit 1
   fi
