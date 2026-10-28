@@ -26,6 +26,18 @@ jobs:
           test -s build/identos-live-amd64.iso
           (cd build && sha256sum -c identos-live-amd64.sha256)
           file build/identos-live-amd64.iso
+      - name: Verify graphical system files in compressed rootfs
+        run: |
+          sudo apt-get install -y squashfs-tools
+          mkdir -p build/iso-check
+          xorriso -osirrox on -indev build/identos-live-amd64.iso -extract /live build/iso-check/live
+          rootfs="$(find build/iso-check/live -maxdepth 1 -name '*.squashfs' | head -1)"
+          test -n "$rootfs"
+          unsquashfs -ll "$rootfs" | grep -Fq 'usr/bin/xfce4-session'
+          unsquashfs -ll "$rootfs" | grep -Fq 'usr/bin/firefox-esr'
+          unsquashfs -ll "$rootfs" | grep -Fq 'usr/local/bin/identos-browser'
+      - name: Headless QEMU kernel boot check
+        run: bash scripts/smoke-graphics-qemu.sh
       - name: Publish live ISO artifact
         uses: actions/upload-artifact@v4
         with:
@@ -34,3 +46,10 @@ jobs:
             build/identos-live-amd64.iso
             build/identos-live-amd64.sha256
           retention-days: 7
+      - name: Upload boot logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: identos-graphics-boot-debug
+          path: build/graphics-boot.log
+          if-no-files-found: ignore
