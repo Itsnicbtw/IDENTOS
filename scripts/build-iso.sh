@@ -18,14 +18,33 @@ mkdir -p "$STAGE/boot/grub"
 cp "$KERNEL" "$STAGE/boot/vmlinuz"
 cp build/identos-initramfs.cpio.gz "$STAGE/boot/initramfs.gz"
 cat > "$STAGE/boot/grub/grub.cfg" <<'EOF'
-set timeout=2
+set timeout=8
 set default=0
 serial --unit=0 --speed=115200
 terminal_input console serial
 terminal_output console serial
-menuentry "IDENT OS - developer boot" {
+menuentry "IDENT OS - developer console" {
   linux /boot/vmlinuz console=ttyS0 rdinit=/init panic=1
   initrd /boot/initramfs.gz
+}
+
+submenu "IDENT OS - browser selection (preview)" {
+  menuentry "Firefox (requires graphical desktop)" {
+    linux /boot/vmlinuz console=ttyS0 rdinit=/init panic=1 ident.browser=firefox
+    initrd /boot/initramfs.gz
+  }
+  menuentry "Google Chrome (requires graphical desktop)" {
+    linux /boot/vmlinuz console=ttyS0 rdinit=/init panic=1 ident.browser=chrome
+    initrd /boot/initramfs.gz
+  }
+  menuentry "Tor Browser (requires graphical desktop)" {
+    linux /boot/vmlinuz console=ttyS0 rdinit=/init panic=1 ident.browser=tor
+    initrd /boot/initramfs.gz
+  }
+  menuentry "Aster (when available)" {
+    linux /boot/vmlinuz console=ttyS0 rdinit=/init panic=1 ident.browser=aster
+    initrd /boot/initramfs.gz
+  }
 }
 EOF
 grub-mkrescue -o build/identos-dev-x86_64.iso "$STAGE" >/dev/null 2>&1

@@ -31,7 +31,7 @@ The ISO is produced at `build/identos-dev-x86_64.iso`. QEMU automatically create
 | Minimal Linux boot shell and diagnostics | Implemented: memory, uptime, block devices |
 | Optional persistent ext4 /data | Implemented; runtime verification required |
 | Persistent file commands | save/read/files/delete/nano in the boot console |
-| Python 3 and Node.js | Bundled command-line runtimes |\n| Developer toolchain | Git, GCC/G++, Make, curl, tar, npm and pip modules bundled; runtime verification pending |\n| Automated ISO/QEMU checks | Configured in GitHub Actions |
+| Python 3 and Node.js | Bundled command-line runtimes |\n| Developer toolchain | Git, GCC/G++, Make, curl, tar, npm and pip modules bundled; runtime verification pending |\n| Browser selection at boot | Firefox, Chrome, Tor Browser, Aster menu entries; launch not yet supported |\n| Automated ISO/QEMU checks | Configured in GitHub Actions |
 | Desktop, installer, secure user sessions | Not implemented |
 | Wine, Proton and .exe support | Planned |
 | Peer-to-peer synchronisation | Planned |
@@ -52,6 +52,12 @@ node hello.js
 ```
 
 The development image now attempts to include Git, GCC/G++, Make, curl, tar, npm and Python pip modules without a separate user installation. This substantially increases the image size. Toolchains and package managers rely on many filesystem conventions, network facilities and certificates that the small initramfs may still lack. **Installed in the image does not mean verified functional:** CI boot and compile/package-manager tests are still required before declaring this a complete development environment.
+
+## Browser selection (preview)
+
+GRUB now provides a **Browser selection (preview)** submenu for Firefox, Google Chrome, Tor Browser and Aster. Each selection passes `ident.browser=...` to the Linux kernel command line; the early-boot console displays the selected browser and explains that launch is not available yet. **This is a selection interface, not a functional browser boot mode.**
+
+The current ISO does not ship a display server, graphical session, or browser binaries. Those must be integrated and tested before these entries can launch browsers. Aster is intentionally reserved until an approved, compatible build is available. Tor Browser also requires careful profile isolation, networking and privacy validation before it can be provided as a default browsing environment.
 
 ## Contribute
 
