@@ -2,6 +2,10 @@
 # IDENT OS early boot. PID 1 inside the VM, not the host.
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export PATH
+TERM=vt100
+export TERM
+HOME=/data
+export HOME
 umask 022
 
 /bin/mount -t proc proc /proc 2>/dev/null || true
@@ -108,6 +112,16 @@ while :; do
         continue
       fi
       /bin/rm -- "/data/$name" && printf 'Deleted %s\n' "$name"
+      ;;
+    nano\\ *)
+      if ! has_storage; then printf 'Persistence unavailable\\n'; continue; fi
+      name="${command#nano }"
+      if ! valid_name "$name"; then printf 'Invalid filename\\n'; continue; fi
+      if [ -L "/data/$name" ] || [ -d "/data/$name" ]; then
+        printf 'Refusing to edit a link or directory\\n'
+        continue
+      fi
+      /bin/nano --ignorercfiles --restricted "/data/$name"
       ;;
     shell)
       /bin/sh -i </dev/console >/dev/console 2>&1
