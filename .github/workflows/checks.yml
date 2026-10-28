@@ -13,7 +13,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y busybox cpio gzip qemu-system-x86 grub-pc-bin grub-common xorriso mtools e2fsprogs linux-image-virtual
+          sudo apt-get install -y busybox nano python3 python3-pip python3-venv nodejs npm git gcc g++ make curl tar binutils libc6-dev cpio gzip qemu-system-x86 grub-pc-bin grub-common xorriso mtools e2fsprogs linux-image-virtual
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
