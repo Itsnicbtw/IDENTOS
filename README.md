@@ -6,22 +6,26 @@
 
 **IDENT OS** is an open-source, Linux-based operating-system experiment pursuing a new desktop, Windows application compatibility and optional decentralised services.
 
-> **Status:** Developer prototype. The ISO is a minimal, root-operated command-line environment, not a secure installer, full desktop, or Windows replacement.
+> **Status:** Experimental graphical Linux distribution. IDENT Desktop is the intended default session, powered by Xorg and Openbox. Full ISO boot and desktop interaction remain unverified.
 
-## Build a bootable ISO
+## Build IDENT OS (graphical edition)
 
-On a suitable Debian/Ubuntu **x86-64** build machine:
+This is the **primary** IDENT OS experience. On a Debian/Ubuntu x86-64 build host:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y busybox cpio gzip qemu-system-x86 grub-pc-bin grub-common xorriso mtools e2fsprogs linux-image-amd64
-KERNEL="$(find /boot -maxdepth 1 -name 'vmlinuz-*' -type f | head -1)" bash scripts/build-iso.sh
-bash scripts/run-iso.sh
+sudo apt-get install -y live-build debootstrap squashfs-tools xorriso qemu-system-x86
+sudo bash scripts/build-live-iso.sh
+bash scripts/boot-live-vm.sh
 ```
 
-The ISO is produced at `build/identos-dev-x86_64.iso`. QEMU automatically creates `build/identos-data.ext4` (256 MiB) when absent and attaches it as a virtual disk. IDENT OS mounts it at `/data` if the kernel supports virtio and ext4. Preserve that disk file across QEMU launches to retain files. The rest of the initramfs is temporary and resets on reboot.
+The expected output is `build/identos-live-amd64.iso`. It contains LightDM, the IDENT Desktop session, the custom panel, app launcher, Firefox ESR, file management, networking and development tools.
 
-**On a Chromebook:** Run the GitHub Actions pipeline instead of using local storage. Successful builds produce a downloadable ISO artifact in the workflow run. The ChromeOS Linux container may not expose a usable kernel or support accelerated nested virtualisation.
+**Persistent user files** require an explicitly configured persistence image. Running without one means changes made during the live session can disappear on shutdown.
+
+## Legacy boot-console diagnostic ISO
+
+The old `build/identos-dev-x86_64.iso` still exists for testing the minimal initramfs, serial console and recovery commands. It is **not** the default IDENT OS user experience and should not be distributed as the graphical desktop image.
 
 ## Developer features
 
@@ -32,7 +36,7 @@ The ISO is produced at `build/identos-dev-x86_64.iso`. QEMU automatically create
 | Optional persistent ext4 /data | Implemented; runtime verification required |
 | Persistent file commands | save/read/files/delete/nano in the boot console |
 | Python 3 and Node.js | Bundled command-line runtimes |\n| Developer toolchain | Git, GCC/G++, Make, curl, tar, npm and pip modules bundled; runtime verification pending |\n| Browser selection at boot | Firefox, Chrome, Tor Browser, Aster menu entries; launch not yet supported |\n| Automated ISO/QEMU checks | Configured in GitHub Actions |
-| Desktop, installer, secure user sessions | Not implemented |
+| Custom IDENT Desktop | Source implemented; interactive QEMU verification pending |\n| Installer and secure user accounts | Not implemented |
 | Wine, Proton and .exe support | Planned |
 | Peer-to-peer synchronisation | Planned |
 
@@ -61,7 +65,7 @@ The current ISO does not ship a display server, graphical session, or browser bi
 
 ## Graphical Live Desktop
 
-For the graphical IDENT OS image use the **separate Debian Live/XFCE build**, not the minimal serial-console ISO:
+The primary IDENT OS image uses Debian Live with IDENT Desktop, not XFCE:
 
 ```bash
 sudo apt-get install live-build debootstrap squashfs-tools xorriso
@@ -75,7 +79,7 @@ The graphical live image includes a custom IDENT Desktop session over Xorg/Openb
 
 ## Graphics build verification
 
-The separate **IDENT OS Graphical Live ISO** GitHub Actions workflow attempts a complete Debian live-build on graphical changes or manual dispatch. It publishes an ISO artifact only when the build completes. The workflow also checks for the XFCE session and browser launcher in the compressed filesystem and runs a headless QEMU kernel-boot smoke test. These checks do not prove that the graphical login, compositor, mouse or Firefox actually work; those require an interactive QEMU session.
+The separate **IDENT OS Graphical Live ISO** GitHub Actions workflow attempts a complete Debian live-build on graphical changes or manual dispatch. It publishes an ISO artifact only when the build completes. The workflow also checks for the IDENT session and browser launcher in the compressed filesystem and runs a headless QEMU kernel-boot smoke test. These checks do not prove that the graphical login, compositor, mouse or Firefox actually work; those require an interactive QEMU session.
 
 The graphical desktop uses IDENT's own Python/Tk panel, launcher, clock and desktop session, with Openbox handling window management and Xorg/libinput handling mouse and keyboard, and an `identos-graphics-check` command for diagnosing display/session availability.
 

@@ -20,7 +20,7 @@ lb config --mode debian --distribution trixie --architectures amd64 \
   --iso-application 'IDENT OS Live Developer Edition' \
   --iso-volume 'IDENTOS_LIVE'
 mkdir -p config/package-lists config/includes.chroot/etc/identos config/includes.chroot/etc/skel
-mkdir -p config/includes.chroot/usr/local/bin config/includes.chroot/usr/share/applications config/includes.chroot/etc/xdg/xfce4/xfconf/xfce-perchannel-xml config/archives
+mkdir -p config/includes.chroot/usr/local/bin config/includes.chroot/usr/share/applications config/archives
 cat > config/archives/trixie-security.list.chroot <<'EOF'
 deb http://security.debian.org/debian-security trixie-security main non-free-firmware
 EOF
@@ -35,10 +35,9 @@ xterm
 pcmanfm
 rofi
 feh
+imagemagick
 xserver-xorg-input-libinput
 xserver-xorg-video-all
-xserver-xorg-video-qxl
-xserver-xorg-video-fbdev
 adwaita-icon-theme
 xcursor-themes
 lightdm
@@ -48,7 +47,6 @@ sudo
 firefox-esr
 zenity
 xdg-utils
-thunar
 mousepad
 curl
 git
@@ -70,7 +68,7 @@ nano
 vim
 podman
 EOF
-cat > config/includes.chroot/etc/identos/xsettings-unused.xml <<'EOF'
+cat > config/includes.chroot/etc/identos/theme.xml <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <channel name="xsettings" version="1.0">
   <property name="Net" type="empty">
@@ -200,21 +198,6 @@ chmod +x config/includes.chroot/etc/skel/Desktop/identos-terminal.desktop
 
 # Default desktop artwork and useful diagnostics for the graphical edition.
 mkdir -p config/includes.chroot/usr/share/backgrounds/identos
-cat > config/includes.chroot/etc/identos/xfce4-desktop-unused.xml <<'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<channel name="xfce4-desktop" version="1.0">
-  <property name="backdrop" type="empty">
-    <property name="screen0" type="empty">
-      <property name="monitor0" type="empty">
-        <property name="workspace0" type="empty">
-          <property name="last-image" type="string" value="/usr/share/backgrounds/identos/identos.svg"/>
-          <property name="image-style" type="int" value="5"/>
-        </property>
-      </property>
-    </property>
-  </property>
-</channel>
-EOF
 cat > config/includes.chroot/usr/share/backgrounds/identos/identos.svg <<'EOF'
 <svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080">
 <defs><linearGradient id="b" x2="1" y2="1"><stop stop-color="#101523"/><stop offset="1" stop-color="#26395b"/></linearGradient></defs>
@@ -223,16 +206,6 @@ cat > config/includes.chroot/usr/share/backgrounds/identos/identos.svg <<'EOF'
 <text x="100" y="920" fill="#e7edf8" font-family="sans-serif" font-size="70" font-weight="700">IDENT OS</text>
 <text x="104" y="970" fill="#a9bbd7" font-family="sans-serif" font-size="26">Developer Live Edition</text>
 </svg>
-EOF
-cat > config/includes.chroot/etc/identos/xfwm4-unused.xml <<'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<channel name="xfwm4" version="1.0">
-  <property name="general" type="empty">
-    <property name="theme" type="string" value="Default"/>
-    <property name="use_compositing" type="bool" value="true"/>
-    <property name="workspace_count" type="int" value="4"/>
-  </property>
-</channel>
 EOF
 cat > config/includes.chroot/usr/local/bin/identos-graphics-check <<'EOF'
 #!/bin/sh
@@ -261,6 +234,7 @@ EOF
 mkdir -p config/includes.chroot/usr/share/xsessions
 install -m 0755 "$ROOT/desktop/identos-panel.py" config/includes.chroot/usr/local/bin/identos-panel
 install -m 0755 "$ROOT/desktop/identos-session" config/includes.chroot/usr/local/bin/identos-session
+install -m 0755 "$ROOT/desktop/identos-benchmark.sh" config/includes.chroot/usr/local/bin/identos-benchmark
 cat > config/includes.chroot/usr/share/xsessions/identos.desktop <<'EOF'
 [Desktop Entry]
 Name=IDENT Desktop
@@ -270,6 +244,22 @@ TryExec=/usr/local/bin/identos-session
 Type=Application
 DesktopNames=IDENT
 EOF
+# Convert the shipped SVG into a raster background. feh does not reliably decode
+# SVG itself on all minimal images. Keep the original artwork too.
+mkdir -p config/hooks/normal
+cat > config/hooks/normal/0750-identos-wallpaper.hook.chroot <<'EOF'
+#!/bin/sh
+set -eu
+if command -v convert >/dev/null 2>&1; then
+  convert -background none -density 96 /usr/share/backgrounds/identos/identos.svg /usr/share/backgrounds/identos/identos.png
+elif command -v magick >/dev/null 2>&1; then
+  magick /usr/share/backgrounds/identos/identos.svg /usr/share/backgrounds/identos/identos.png
+else
+  echo "IDENT OS: image converter missing" >&2
+  exit 1
+fi
+EOF
+chmod +x config/hooks/normal/0750-identos-wallpaper.hook.chroot
 lb build
 IMAGE="$(find . -maxdepth 1 -name '*.hybrid.iso' -o -name '*.iso' | head -1)"
 [[ -n "$IMAGE" && -s "$IMAGE" ]] || { echo "ERROR: live-build created no ISO" >&2; exit 1; }
