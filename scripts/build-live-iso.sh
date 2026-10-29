@@ -30,6 +30,8 @@ openbox
 xorg
 xserver-xorg-core
 python3-tk
+libgtk-3-dev
+pkg-config
 x11-xserver-utils
 xterm
 pcmanfm
@@ -236,11 +238,21 @@ install -m 0755 "$ROOT/desktop/identos-panel.py" config/includes.chroot/usr/loca
 install -m 0755 "$ROOT/desktop/identos-panel2.py" config/includes.chroot/usr/local/bin/identos-panel2
 mkdir -p config/includes.chroot/usr/local/bin/identos2
 cp "$ROOT"/desktop/identos2/*.py config/includes.chroot/usr/local/bin/identos2/
+mkdir -p config/includes.chroot/usr/local/share/identos
+cp "$ROOT/desktop/identos2/panel.c" config/includes.chroot/usr/local/share/identos/panel.c
 install -m 0755 "$ROOT/desktop/identos-session" config/includes.chroot/usr/local/bin/identos-session
 install -m 0755 "$ROOT/desktop/identos-benchmark.sh" config/includes.chroot/usr/local/bin/identos-benchmark
 install -m 0755 "$ROOT/system/identos-capabilities.py" config/includes.chroot/usr/local/bin/identos-capabilities
 install -m 0755 "$ROOT/scripts/identos-system-report.sh" config/includes.chroot/usr/local/bin/identos-system-report
 install -m 0755 "$ROOT/scripts/identos-update-check.sh" config/includes.chroot/usr/local/bin/identos-update-check
+cat > config/hooks/normal/0790-identos-desktop2.hook.chroot <<'EOF'
+#!/bin/sh
+set -eu
+cc -O2 -std=c11 -Wall -Wextra -Wno-deprecated-declarations $(pkg-config --cflags gtk+-3.0) /usr/local/share/identos/panel.c -o /usr/local/bin/identos-panel2 $(pkg-config --libs gtk+-3.0)
+chmod 0755 /usr/local/bin/identos-panel2
+rm -f /usr/local/share/identos/panel.c
+EOF
+chmod +x config/hooks/normal/0790-identos-desktop2.hook.chroot
 cat > config/includes.chroot/usr/local/bin/identos-session2 <<'EOF'
 #!/bin/sh
 # IDENT Desktop 2 experimental session; preserve Desktop 1 as fallback.
