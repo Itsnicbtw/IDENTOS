@@ -235,9 +235,6 @@ EOF
 # This is the real desktop session, not an XFCE panel with a new wallpaper.
 mkdir -p config/includes.chroot/usr/share/xsessions
 install -m 0755 "$ROOT/desktop/identos-panel.py" config/includes.chroot/usr/local/bin/identos-panel
-install -m 0755 "$ROOT/desktop/identos-panel2.py" config/includes.chroot/usr/local/bin/identos-panel2
-mkdir -p config/includes.chroot/usr/local/bin/identos2
-cp "$ROOT"/desktop/identos2/*.py config/includes.chroot/usr/local/bin/identos2/
 mkdir -p config/includes.chroot/usr/local/share/identos
 cp "$ROOT/desktop/identos2/panel.c" config/includes.chroot/usr/local/share/identos/panel.c
 install -m 0755 "$ROOT/desktop/identos-session" config/includes.chroot/usr/local/bin/identos-session
