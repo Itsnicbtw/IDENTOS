@@ -19,6 +19,10 @@ jobs:
           bash tests/test-persistence-creator.sh
       - name: Validate low-level capability and release integrity contracts
         run: python3 tests/test-low-level.py
+      - name: Validate IDENT Desktop 2 modules
+        run: |
+          python3 -m compileall -q desktop/identos2 desktop/identos-panel2.py
+          python3 -m unittest discover -s tests -p 'test-desktop2.py' -v
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
