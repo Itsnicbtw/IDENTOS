@@ -17,6 +17,8 @@ jobs:
       - name: Verify alpha release diagnostics
         run: bash tests/test-release-readiness.sh
           bash tests/test-persistence-creator.sh
+      - name: Validate low-level capability and release integrity contracts
+        run: python3 tests/test-low-level.py
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
