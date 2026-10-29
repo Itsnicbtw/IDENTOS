@@ -233,11 +233,36 @@ EOF
 # This is the real desktop session, not an XFCE panel with a new wallpaper.
 mkdir -p config/includes.chroot/usr/share/xsessions
 install -m 0755 "$ROOT/desktop/identos-panel.py" config/includes.chroot/usr/local/bin/identos-panel
+install -m 0755 "$ROOT/desktop/identos-panel2.py" config/includes.chroot/usr/local/bin/identos-panel2
+mkdir -p config/includes.chroot/usr/local/bin/identos2
+cp "$ROOT"/desktop/identos2/*.py config/includes.chroot/usr/local/bin/identos2/
 install -m 0755 "$ROOT/desktop/identos-session" config/includes.chroot/usr/local/bin/identos-session
 install -m 0755 "$ROOT/desktop/identos-benchmark.sh" config/includes.chroot/usr/local/bin/identos-benchmark
 install -m 0755 "$ROOT/system/identos-capabilities.py" config/includes.chroot/usr/local/bin/identos-capabilities
 install -m 0755 "$ROOT/scripts/identos-system-report.sh" config/includes.chroot/usr/local/bin/identos-system-report
 install -m 0755 "$ROOT/scripts/identos-update-check.sh" config/includes.chroot/usr/local/bin/identos-update-check
+cat > config/includes.chroot/usr/local/bin/identos-session2 <<'EOF'
+#!/bin/sh
+# IDENT Desktop 2 experimental session; preserve Desktop 1 as fallback.
+set -eu
+export XDG_CURRENT_DESKTOP=IDENT
+export XDG_SESSION_DESKTOP=identos2
+openbox &
+wm_pid=$!
+cleanup() { kill "$wm_pid" 2>/dev/null || true; wait "$wm_pid" 2>/dev/null || true; }
+trap cleanup EXIT INT TERM
+/usr/local/bin/identos-panel2
+EOF
+chmod +x config/includes.chroot/usr/local/bin/identos-session2
+cat > config/includes.chroot/usr/share/xsessions/identos2.desktop <<'EOF'
+[Desktop Entry]
+Name=IDENT Desktop 2 (Experimental)
+Comment=Modular desktop shell with settings
+Exec=/usr/local/bin/identos-session2
+TryExec=/usr/local/bin/identos-session2
+Type=Application
+DesktopNames=IDENT
+EOF
 cat > config/includes.chroot/usr/share/xsessions/identos.desktop <<'EOF'
 [Desktop Entry]
 Name=IDENT Desktop
