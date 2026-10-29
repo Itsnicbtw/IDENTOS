@@ -64,7 +64,7 @@ static gboolean launch(int action) {
     if (!executable) return FALSE;
     GError *error = NULL;
     gboolean ok = g_spawn_async(NULL, (gchar **)commands[action], NULL,
-                                 G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
+                                 G_SPAWN_SEARCH_PATH,
                                  NULL, NULL, NULL, &error);
     if (!ok) {
         g_warning("Launch failed: %s", error->message);
