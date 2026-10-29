@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import tkinter as tk
+from tkinter import messagebox
 from datetime import datetime
 
 from .core import DEFAULTS, launch, load_settings, save_settings
@@ -88,7 +89,7 @@ class DesktopPanel:
             try:
                 save_settings(self.settings)
             except OSError as error:
-                tk.messagebox.showerror("Cannot save settings", str(error), parent=dialog)
+                messagebox.showerror("Cannot save settings", str(error), parent=dialog)
                 return
             self.place()
             dialog.destroy()
