@@ -30,6 +30,7 @@ jobs:
         run: |
           python3 tests/test-identium-kernel.py
           python3 tests/test-identium-hardware.py
+          python3 tests/test-identium-bundle.py
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
