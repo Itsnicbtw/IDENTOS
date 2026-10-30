@@ -26,6 +26,9 @@ mkdir -p config/includes.chroot/etc/systemd/system/multi-user.target.wants
 mkdir -p config/includes.chroot/etc/tmpfiles.d config/includes.chroot/etc/sysctl.d
 mkdir -p config/includes.chroot/usr/lib/systemd/system
 install -m 0755 "$ROOT/base-os/identos-base-check" config/includes.chroot/usr/local/bin/identos-base-check
+install -m 0755 "$ROOT/base-os/identos-bootctl" config/includes.chroot/usr/local/bin/identos-bootctl
+mkdir -p config/includes.chroot/usr/share/identos
+install -m 0644 "$ROOT/base-os/identos-distribution.json" config/includes.chroot/usr/share/identos/distribution.json
 install -m 0644 "$ROOT/base-os/identos-base-check.service" config/includes.chroot/usr/lib/systemd/system/identos-base-check.service
 ln -s /usr/lib/systemd/system/identos-base-check.service config/includes.chroot/etc/systemd/system/multi-user.target.wants/identos-base-check.service
 install -m 0644 "$ROOT/base-os/identos-base.tmpfiles" config/includes.chroot/etc/tmpfiles.d/identos-base.conf
