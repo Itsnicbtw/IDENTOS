@@ -16,7 +16,6 @@ if readelf -l "$BUSYBOX_STATIC" | grep -q 'INTERP'; then
  echo 'Dynamic ELF interpreter detected; static BusyBox required' >&2; exit 2
 fi
 [[ "$OUT" == *.tar.gz && "$OUT" != /dev/* ]] || { echo 'Output must be a .tar.gz file' >&2; exit 2; }
-command -v readelf >/dev/null && command -v tar >/dev/null || exit 2
 mkdir -p "$(dirname "$OUT")"
 [[ ! -e "$OUT" && ! -L "$OUT" ]] || { echo 'Refusing to overwrite output' >&2; exit 2; }
 WORK="$(mktemp -d)"
