@@ -27,7 +27,9 @@ jobs:
             -o /tmp/identos-panel2 $(pkg-config --libs gtk+-3.0)
           /tmp/identos-panel2 --self-test
       - name: Validate IDENTIUM kernel build contracts
-        run: python3 tests/test-identium-kernel.py
+        run: |
+          python3 tests/test-identium-kernel.py
+          python3 tests/test-identium-hardware.py
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
