@@ -40,7 +40,8 @@ xorg
 systemd-sysv
 udev
 dbus
-policykit-1
+polkitd
+pkexec
 initramfs-tools
 linux-image-amd64
 locales
