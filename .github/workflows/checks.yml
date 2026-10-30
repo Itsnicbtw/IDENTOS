@@ -27,7 +27,10 @@ jobs:
             -o /tmp/identos-panel2 $(pkg-config --libs gtk+-3.0)
           /tmp/identos-panel2 --self-test
       - name: Validate independent-rootfs safety and init
-        run: bash tests/test-independent-rootfs.sh
+        run: |
+          bash tests/test-independent-rootfs.sh
+          bash -n independent/build-vm-disk.sh
+          python3 -m unittest discover -s tests -p "test-independent-image.py" -v
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
