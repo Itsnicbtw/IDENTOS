@@ -28,3 +28,19 @@ Only use the output in an isolated VM with a compatible Linux kernel supplied se
 ## Safety
 
 No physical disks are partitioned by this repository milestone. No key enrolment, firmware writes, public package repository or recovery guarantee is implemented. The Debian-based graphical ISO remains the known-good development track while independent components mature.
+
+
+## Experimental boot smoke test
+
+The independently assembled rootfs can now be repackaged as a Linux initramfs and booted directly using an externally provided Linux kernel in an isolated QEMU instance. This path does not use the Debian Live root filesystem, and QEMU is intentionally launched without any disks or networking.
+
+```sh
+sudo apt-get install busybox-static cpio qemu-system-x86
+export BUSYBOX_STATIC="$(command -v busybox)"
+export BUSYBOX_SHA256="$(sha256sum "$BUSYBOX_STATIC" | cut -d' ' -f1)"
+bash independent/build-rootfs.sh build/identos-independent-rootfs.tar.gz
+bash independent/build-initrd.sh build/identos-independent-rootfs.tar.gz build/identos-independent-initrd.cpio.gz
+bash independent/boot-qemu.sh /path/to/vmlinuz build/identos-independent-initrd.cpio.gz
+```
+
+The CI integration smoke test must see the IDENT init banner after kernel boot. This **does not demonstrate an installed-disk boot, a persistent user session, secure multiuser login, or rollback from a failed actual boot**. The bare emergency shell is unauthenticated and appropriate only in isolated VMs. Hardware installation remains blocked.
