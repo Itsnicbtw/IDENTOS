@@ -28,6 +28,10 @@ jobs:
           /tmp/identos-panel2 --self-test
       - name: Validate IDENTIUM secure boot preparation
         run: bash tests/test-identium-secureboot.sh
+      - name: Exercise IDENTIUM EFI signing with disposable keys
+        run: |
+          sudo apt-get install -y sbsigntool mingw-w64 openssl
+          bash tests/test-identium-signing.sh
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
