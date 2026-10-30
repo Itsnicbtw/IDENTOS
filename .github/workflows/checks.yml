@@ -53,6 +53,17 @@ jobs:
           set -e
           grep -Fq 'IDENT OS | independent minimal rootfs | experimental' build/independent-boot.log || { tail -100 build/independent-boot.log; exit 1; }
           echo "Independent IDENT initrd booted (QEMU exit code $status)"
+      - name: Validate IDENTIUM secure boot tools
+        run: bash tests/test-identium-secureboot.sh
+      - name: Test IDENTIUM disposable-key signing
+        run: |
+          sudo apt-get install -y sbsigntool mingw-w64 openssl
+          bash tests/test-identium-signing.sh
+      - name: Validate IDENTIUM kernel and boot bundle
+        run: |
+          python3 tests/test-identium-kernel.py
+          python3 tests/test-identium-hardware.py
+          python3 tests/test-identium-bundle.py
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
