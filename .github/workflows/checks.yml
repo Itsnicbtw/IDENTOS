@@ -19,6 +19,13 @@ jobs:
           bash tests/test-persistence-creator.sh
       - name: Validate low-level capability and release integrity contracts
         run: python3 tests/test-low-level.py
+      - name: Build and verify IDENT Desktop 2 native C panel
+        run: |
+          sudo apt-get install -y libgtk-3-dev pkg-config
+          cc -O2 -std=c11 -Wall -Wextra -Werror -Wno-error=deprecated-declarations \
+            $(pkg-config --cflags gtk+-3.0) desktop/identos2/panel.c \
+            -o /tmp/identos-panel2 $(pkg-config --libs gtk+-3.0)
+          /tmp/identos-panel2 --self-test
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
