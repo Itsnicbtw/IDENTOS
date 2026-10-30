@@ -16,8 +16,7 @@ jobs:
       - name: Fetch upstream Linux v6.12 source
         run: |
           curl --fail --location --retry 3 --output /tmp/linux.tar.xz https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.tar.xz
-          curl --fail --location --retry 3 --output /tmp/linux.tar.sign https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.tar.sign
-          echo 'For production builds, verify the upstream detached signature against an independently trusted kernel maintainer key before building.'
+          echo 'UNVERIFIED upstream archive: experimental CI only. Release builds require trusted signature validation.'
           mkdir -p /tmp/identium-src
           tar -xJf /tmp/linux.tar.xz -C /tmp/identium-src --strip-components=1
       - name: Compile IDENTIUM kernel
