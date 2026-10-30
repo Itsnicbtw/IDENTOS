@@ -21,6 +21,18 @@ lb config --mode debian --distribution trixie --architectures amd64 \
   --iso-volume 'IDENTOS_LIVE'
 mkdir -p config/package-lists config/includes.chroot/etc/identos config/includes.chroot/etc/skel
 mkdir -p config/includes.chroot/usr/local/bin config/includes.chroot/usr/share/applications config/archives
+# Base runtime is explicit and checked at boot, not inferred from desktop packages.
+mkdir -p config/includes.chroot/etc/systemd/system/multi-user.target.wants
+mkdir -p config/includes.chroot/etc/tmpfiles.d config/includes.chroot/etc/sysctl.d
+mkdir -p config/includes.chroot/usr/lib/systemd/system
+install -m 0755 "$ROOT/base-os/identos-base-check" config/includes.chroot/usr/local/bin/identos-base-check
+install -m 0755 "$ROOT/base-os/identos-bootctl" config/includes.chroot/usr/local/bin/identos-bootctl
+mkdir -p config/includes.chroot/usr/share/identos
+install -m 0644 "$ROOT/base-os/identos-distribution.json" config/includes.chroot/usr/share/identos/distribution.json
+install -m 0644 "$ROOT/base-os/identos-base-check.service" config/includes.chroot/usr/lib/systemd/system/identos-base-check.service
+ln -s /usr/lib/systemd/system/identos-base-check.service config/includes.chroot/etc/systemd/system/multi-user.target.wants/identos-base-check.service
+install -m 0644 "$ROOT/base-os/identos-base.tmpfiles" config/includes.chroot/etc/tmpfiles.d/identos-base.conf
+install -m 0644 "$ROOT/base-os/identos-base.sysctl" config/includes.chroot/etc/sysctl.d/60-identos-base.conf
 cat > config/archives/trixie-security.list.chroot <<'EOF'
 deb http://security.debian.org/debian-security trixie-security main non-free-firmware
 EOF
@@ -28,6 +40,16 @@ EOF
 cat > config/package-lists/identos.list.chroot <<'EOF'
 openbox
 xorg
+systemd-sysv
+udev
+dbus
+polkitd
+pkexec
+initramfs-tools
+linux-image-amd64
+locales
+tzdata
+passwd
 xserver-xorg-core
 python3-tk
 libgtk-3-dev

@@ -1,0 +1,24 @@
+#!/bin/sh
+# Read-only base OS diagnostic, suitable for boot and post-upgrade checks.
+set -eu
+failed=0
+check() {
+  if "$@" >/dev/null 2>&1; then printf 'PASS %s\n' "$*"; else printf 'FAIL %s\n' "$*"; failed=1; fi
+}
+echo 'IDENT OS base runtime check'
+check test -r /etc/os-release
+check test -d /proc
+check test -d /sys
+check test -d /dev
+check test -d /run
+check test -x /usr/bin/systemctl
+check test -x /usr/bin/loginctl
+if command -v systemctl >/dev/null 2>&1; then
+  if systemctl is-system-running --quiet; then
+    echo 'PASS systemd running'
+  else
+    echo 'INFO systemd is not fully running (possibly during boot or live session)'
+  fi
+fi
+if [ "$failed" -ne 0 ]; then echo 'Base OS missing expected runtime facilities' >&2; exit 1; fi
+echo 'Base OS runtime facilities present. Hardware and graphical login remain separate tests.'
