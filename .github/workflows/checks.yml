@@ -28,6 +28,8 @@ jobs:
           /tmp/identos-panel2 --self-test
       - name: Validate base OS service and configuration
         run: python3 tests/test-base-os.py
+      - name: Validate boot inspector and distribution provenance
+        run: python3 -m unittest discover -s tests -p 'test-boot-management.py' -v
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
