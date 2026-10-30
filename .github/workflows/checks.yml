@@ -30,9 +30,9 @@ jobs:
         run: |
           bash tests/test-independent-rootfs.sh
           bash -n independent/build-vm-disk.sh
-          python3 -m unittest discover -s tests -p "test-independent-image.py" -v
-          python3 -m unittest discover -s tests -p "test-independent-slots.py" -v
-          python3 -m unittest discover -s tests -p "test-independent-repository.py" -v
+          python3 tests/test-independent-image.py
+          python3 tests/test-independent-slots.py
+          python3 tests/test-independent-repository.py
       - name: Build and boot independent IDENT initramfs in QEMU
         run: |
           sudo apt-get install -y busybox-static
