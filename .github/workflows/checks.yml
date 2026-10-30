@@ -41,6 +41,7 @@ jobs:
           export BUSYBOX_SHA256="$(sha256sum "$BUSYBOX_STATIC" | awk '{print $1}')"
           bash independent/build-rootfs.sh build/identos-independent-rootfs.tar.gz
           bash independent/build-initrd.sh build/identos-independent-rootfs.tar.gz build/identos-independent-initrd.cpio.gz
+          bash tests/test-identium-disk-persistence.sh
           KERNEL_SOURCE="$(find /boot -maxdepth 1 -name 'vmlinuz-*-generic' -type f | head -1)"
           test -n "$KERNEL_SOURCE"
           sudo cp "$KERNEL_SOURCE" build/identium-test-vmlinuz
