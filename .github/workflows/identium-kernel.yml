@@ -1,0 +1,39 @@
+name: IDENTIUM Kernel Build
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-kernel:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kernel build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev dwarves cpio xz-utils
+      - name: Fetch upstream Linux v6.12 source
+        run: |
+          curl --fail --location --retry 3 --output /tmp/linux.tar.xz https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.tar.xz
+          curl --fail --location --retry 3 --output /tmp/linux.tar.sign https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.tar.sign
+          echo 'For production builds, verify the upstream detached signature against an independently trusted kernel maintainer key before building.'
+          mkdir -p /tmp/identium-src
+          tar -xJf /tmp/linux.tar.xz -C /tmp/identium-src --strip-components=1
+      - name: Compile IDENTIUM kernel
+        run: |
+          IDENTIUM_KERNEL_SOURCE=/tmp/identium-src IDENTIUM_KERNEL_JOBS=2 bash kernel/build-identium.sh
+      - name: Record artifact
+        run: |
+          sha256sum build/identium-kernel/arch/x86/boot/bzImage
+          cat build/identium-kernel/identium-kernel-release.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: identium-linux-kernel-amd64-experimental
+          path: |
+            build/identium-kernel/arch/x86/boot/bzImage
+            build/identium-kernel/bzImage.sha256
+            build/identium-kernel/identium-kernel-release.txt
+            build/identium-kernel/.config
+          if-no-files-found: error
+          retention-days: 14
