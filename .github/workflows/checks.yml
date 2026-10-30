@@ -31,6 +31,7 @@ jobs:
           bash tests/test-independent-rootfs.sh
           bash -n independent/build-vm-disk.sh
           python3 -m unittest discover -s tests -p "test-independent-image.py" -v
+          python3 -m unittest discover -s tests -p "test-independent-slots.py" -v
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
