@@ -16,7 +16,7 @@ def validate(filename):
                 raise ValueError("Unsafe archive path")
             if member.issym():
                 link = pathlib.PurePosixPath(member.linkname)
-                if link.is_absolute() or ".." in link.parts or not member.linkname:
+                if name.parent != pathlib.PurePosixPath("bin") or member.linkname != "busybox":
                     raise ValueError("Unsafe symlink")
             elif not (member.isfile() or member.isdir()):
                 raise ValueError("Special files and hard links unsupported")
