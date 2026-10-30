@@ -1,0 +1,16 @@
+#!/bin/sh
+# IDENT experimental independent init, runs as PID 1.
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+/bin/mount -t proc proc /proc || exec /bin/sh
+/bin/mount -t sysfs sysfs /sys || exec /bin/sh
+/bin/mount -t devtmpfs devtmpfs /dev || /bin/mount -t tmpfs tmpfs /dev
+/bin/mount -t tmpfs tmpfs /run
+/bin/mount -t tmpfs tmpfs /tmp
+echo 'IDENT OS | independent minimal rootfs | experimental'
+echo 'No installer, networking, authenticated logins or graphical desktop.'
+echo 'For isolation, run in QEMU with no host drives attached.'
+while :; do
+  /bin/sh </dev/console >/dev/console 2>&1
+  echo 'Shell exited; restarting emergency console' >/dev/console
+  /bin/sleep 1
+done
