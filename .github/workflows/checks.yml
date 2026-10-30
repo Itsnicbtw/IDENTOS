@@ -33,6 +33,22 @@ jobs:
           python3 -m unittest discover -s tests -p "test-independent-image.py" -v
           python3 -m unittest discover -s tests -p "test-independent-slots.py" -v
           python3 -m unittest discover -s tests -p "test-independent-repository.py" -v
+      - name: Build and boot independent IDENT initramfs in QEMU
+        run: |
+          sudo apt-get install -y busybox-static
+          bash tests/test-independent-boot.sh
+          export BUSYBOX_STATIC="$(command -v busybox)"
+          export BUSYBOX_SHA256="$(sha256sum "$BUSYBOX_STATIC" | awk '{print $1}')"
+          bash independent/build-rootfs.sh build/identos-independent-rootfs.tar.gz
+          bash independent/build-initrd.sh build/identos-independent-rootfs.tar.gz build/identos-independent-initrd.cpio.gz
+          KERNEL_SOURCE="$(find /boot -maxdepth 1 -name 'vmlinuz-*-generic' -type f | head -1)"
+          test -n "$KERNEL_SOURCE"
+          set +e
+          timeout 45s bash independent/boot-qemu.sh "$KERNEL_SOURCE" build/identos-independent-initrd.cpio.gz </dev/null >build/independent-boot.log 2>&1
+          status=$?
+          set -e
+          grep -Fq 'IDENT OS | independent minimal rootfs | experimental' build/independent-boot.log || { tail -100 build/independent-boot.log; exit 1; }
+          echo "Independent IDENT initrd booted (QEMU exit code $status)"
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
