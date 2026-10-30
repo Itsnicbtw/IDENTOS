@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "bootloader": "GRUB (development track)",
+  "kernel": "Linux, externally supplied",
+  "root_label": "IDENTROOT",
+  "root_fs": "ext4",
+  "firmware": ["BIOS test planned", "UEFI test planned"],
+  "signed": false,
+  "disk_install": false,
+  "automatic_rollback": false
+}
