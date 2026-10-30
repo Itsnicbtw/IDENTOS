@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""Read-only boot manager inspector. No NVRAM or partition writes."""
+import argparse
+import json
+import shutil
+import subprocess
+
+def inspect():
+    result = {"schema": 1, "firmware": "uefi" if __import__("pathlib").Path("/sys/firmware/efi").exists() else "bios", "boot_entries": [], "default_target": None}
+    if shutil.which("systemctl"):
+        p = subprocess.run(["systemctl", "get-default"], capture_output=True, text=True, timeout=8, check=False)
+        if p.returncode == 0:
+            result["default_target"] = p.stdout.strip()
+    if shutil.which("bootctl") and result["firmware"] == "uefi":
+        p = subprocess.run(["bootctl", "list", "--no-pager"], capture_output=True, text=True, timeout=8, check=False)
+        if p.returncode == 0:
+            result["boot_entries"] = p.stdout.splitlines()[:120]
+    return result
+
+def main():
+    parser = argparse.ArgumentParser(description="Inspect IDENT OS boot configuration without changing firmware")
+    parser.add_argument("--json", action="store_true")
+    args = parser.parse_args()
+    data = inspect()
+    if args.json:
+        print(json.dumps(data, indent=2, sort_keys=True))
+    else:
+        print("IDENT OS boot status")
+        print("Firmware:", data["firmware"])
+        print("Default systemd target:", data["default_target"] or "unknown")
+        print("Boot entries (available on systemd-boot UEFI installations):")
+        print("\n".join(data["boot_entries"]) if data["boot_entries"] else "not available")
+        print("No boot configuration changed.")
+
+if __name__ == "__main__":
+    main()
