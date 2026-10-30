@@ -43,6 +43,9 @@ jobs:
           bash independent/build-initrd.sh build/identos-independent-rootfs.tar.gz build/identos-independent-initrd.cpio.gz
           KERNEL_SOURCE="$(find /boot -maxdepth 1 -name 'vmlinuz-*-generic' -type f | head -1)"
           test -n "$KERNEL_SOURCE"
+          sudo cp "$KERNEL_SOURCE" build/identium-test-vmlinuz
+          sudo chmod 644 build/identium-test-vmlinuz
+          KERNEL_SOURCE="$PWD/build/identium-test-vmlinuz"
           set +e
           timeout 45s bash independent/boot-qemu.sh "$KERNEL_SOURCE" build/identos-independent-initrd.cpio.gz </dev/null >build/independent-boot.log 2>&1
           status=$?
