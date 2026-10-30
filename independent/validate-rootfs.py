@@ -14,10 +14,12 @@ def validate(filename):
             name = pathlib.PurePosixPath(member.name)
             if name.is_absolute() or ".." in name.parts:
                 raise ValueError("Unsafe archive path")
-            if not (member.isfile() or member.isdir()):
-                # Symlinks are required by typical rootfs layouts. Reject them for
-                # image installer until link-safe staging is implemented.
-                raise ValueError("Links and special files unsupported by installer")
+            if member.issym():
+                link = pathlib.PurePosixPath(member.linkname)
+                if link.is_absolute() or ".." in link.parts or not member.linkname:
+                    raise ValueError("Unsafe symlink")
+            elif not (member.isfile() or member.isdir()):
+                raise ValueError("Special files and hard links unsupported")
             total += member.size
             if total > 8 * 1024**3:
                 raise ValueError("Archive contents too large")
