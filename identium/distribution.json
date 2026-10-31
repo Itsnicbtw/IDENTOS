@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "name": "IDENTIUM",
+  "project": "IDENT OS",
+  "stage": "experimental-independent-base",
+  "architecture": "amd64",
+  "current_graphical_distribution": "Debian Trixie",
+  "independent_base": "in-development",
+  "secure_boot": {
+    "efi_signing_tooling": true,
+    "efi_image_production": false,
+    "trusted_boot_chain_verified": false,
+    "firmware_enrolment": false
+  }
+}
