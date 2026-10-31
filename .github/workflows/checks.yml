@@ -64,6 +64,9 @@ jobs:
           python3 tests/test-identium-kernel.py
           python3 tests/test-identium-kernel-policy.py
           bash tests/test-identium-splash.sh
+          sudo apt-get install -y musl-tools linux-libc-dev
+          musl-gcc -static -Os -Wall -Wextra -Werror independent/identium-fb-splash.c -lm -o /tmp/identium-fb-splash
+          /tmp/identium-fb-splash 0 >/dev/null 2>&1 && exit 1 || true
           python3 tests/test-identium-hardware.py
           python3 tests/test-identium-bundle.py
       - name: Validate scripts and initramfs
