@@ -1,0 +1,18 @@
+#!/bin/sh
+# IDENTIUM minimal console boot animation. Only uses BusyBox utilities.
+# Never consume stdin; PID 1's emergency shell needs it.
+case "${IDENTIUM_SPLASH:-auto}" in off) exit 0;; esac
+if [ "${IDENTIUM_SPLASH:-auto}" = auto ]; then
+  [ -c /dev/tty0 ] || exit 0
+  output=/dev/tty0
+else
+  output=/dev/console
+fi
+[ -w "$output" ] || exit 0
+printf '\033[?25l\033[2J\033[H' > "$output"
+printf '\n\n       I D E N T I U M\n\n' > "$output"
+for frame in '[    ]' '[=   ]' '[==  ]' '[=== ]' '[====]' ; do
+  printf '\r       Starting %s' "$frame" > "$output"
+  /bin/sleep 0.12
+done
+printf '\n\n       Experimental developer boot\n\033[?25h' > "$output"
