@@ -12,6 +12,10 @@ fi
 # Optional repeat count represents successive loading attempts, never endless boot delay.
 attempts="${IDENTIUM_DRAW_ATTEMPTS:-2}"
 case "$attempts" in 1|2|3|4|5) ;; *) attempts=2;; esac
+# Try the pixel-accurate framebuffer renderer first, then fall back to text.
+if [ -x /bin/identium-fb-splash ] && [ -c /dev/fb0 ]; then
+  /bin/identium-fb-splash "$attempts" && exit 0
+fi
 # Each stroke is positioned and rendered individually. Characters accumulate
 # to form five hand-drawn letters rather than a progress bar.
 stroke() {
