@@ -29,6 +29,7 @@ for app in sh mount sleep ls cat echo mkdir uname dmesg ps reboot poweroff sync;
  ln -s busybox "$WORK/bin/$app"
 done
 install -m 0755 "$ROOT/independent/init" "$WORK/init"
+install -m 0755 "$ROOT/independent/boot-splash" "$WORK/bin/boot-splash"
 printf 'NAME="IDENT OS Independent Minimal"\nID=identos\nVERSION_ID="0.1-dev"\nPRETTY_NAME="IDENT OS Independent Minimal (experimental)"\n' >"$WORK/etc/os-release"
 printf 'root:x:0:0:root:/root:/bin/sh\n' >"$WORK/etc/passwd"
 printf 'root:x:0:\n' >"$WORK/etc/group"
