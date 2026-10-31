@@ -17,8 +17,9 @@ SOURCE="$(cd "$SOURCE" && pwd)"
 [[ "$OUTPUT" != "$SOURCE" && "$OUTPUT" != "$SOURCE/"* ]] || { echo 'Build outside the source tree' >&2; exit 2; }
 make -C "$SOURCE" O="$OUTPUT" ARCH=x86_64 x86_64_defconfig
 # Merge the IDENTIUM policy on top of the upstream baseline.
-KCONFIG_CONFIG="$OUTPUT/.config" "$SOURCE/scripts/kconfig/merge_config.sh" -m -O "$OUTPUT" "$OUTPUT/.config" "$ROOT/kernel/config/identium-x86_64.fragment" "$ROOT/kernel/config/identium-hardware.fragment"
+KCONFIG_CONFIG="$OUTPUT/.config" "$SOURCE/scripts/kconfig/merge_config.sh" -m -O "$OUTPUT" "$OUTPUT/.config" "$ROOT/kernel/config/identium-x86_64.fragment" "$ROOT/kernel/config/identium-hardware.fragment" "$ROOT/kernel/config/identium-hardware-extended.fragment" "$ROOT/kernel/config/identium-security.fragment"
 make -C "$SOURCE" O="$OUTPUT" ARCH=x86_64 olddefconfig
+python3 "$ROOT/kernel/verify-config.py" "$OUTPUT/.config"
 make -C "$SOURCE" O="$OUTPUT" ARCH=x86_64 -j"$JOBS" bzImage
 test -s "$OUTPUT/arch/x86/boot/bzImage"
 sha256sum "$OUTPUT/arch/x86/boot/bzImage" > "$OUTPUT/bzImage.sha256"
