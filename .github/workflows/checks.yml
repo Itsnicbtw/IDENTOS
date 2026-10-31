@@ -63,6 +63,7 @@ jobs:
         run: |
           python3 tests/test-identium-kernel.py
           python3 tests/test-identium-kernel-policy.py
+          bash tests/test-identium-splash.sh
           python3 tests/test-identium-hardware.py
           python3 tests/test-identium-bundle.py
       - name: Validate scripts and initramfs
