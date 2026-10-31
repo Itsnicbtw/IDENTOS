@@ -1,6 +1,6 @@
 #!/bin/sh
-# IDENTIUM minimal console boot animation. Only uses BusyBox utilities.
-# Never consume stdin; PID 1's emergency shell needs it.
+# IDENTIUM console pen-draw splash: each pass draws IDENT stroke by stroke.
+# Runs without Python, framebuffer libraries, or stdin consumption.
 case "${IDENTIUM_SPLASH:-auto}" in off) exit 0;; esac
 if [ "${IDENTIUM_SPLASH:-auto}" = auto ]; then
   [ -c /dev/tty0 ] || exit 0
@@ -9,10 +9,66 @@ else
   output=/dev/console
 fi
 [ -w "$output" ] || exit 0
-printf '\033[?25l\033[2J\033[H' > "$output"
-printf '\n\n       I D E N T I U M\n\n' > "$output"
-for frame in '[    ]' '[=   ]' '[==  ]' '[=== ]' '[====]' ; do
-  printf '\r       Starting %s' "$frame" > "$output"
-  /bin/sleep 0.12
+# Optional repeat count represents successive loading attempts, never endless boot delay.
+attempts="${IDENTIUM_DRAW_ATTEMPTS:-2}"
+case "$attempts" in 1|2|3|4|5) ;; *) attempts=2;; esac
+# Each stroke is positioned and rendered individually. Characters accumulate
+# to form five hand-drawn letters rather than a progress bar.
+stroke() {
+  printf '\033[%s;%sH%s' "$1" "$2" "$3" > "$output"
+  /bin/sleep 0.035
+}
+draw_ident() {
+  # I: horizontal cap, descending body, foot.
+  stroke 8 8 '____'
+  stroke 9 10 '|'
+  stroke 10 10 '|'
+  stroke 11 10 '|'
+  stroke 12 8 '----'
+  # D: straight downstroke then rounded outer contour.
+  stroke 8 16 '|---.'
+  stroke 9 16 '|'
+  stroke 10 16 '|'
+  stroke 11 16 '|'
+  stroke 12 16 '|___/'
+  stroke 9 21 '|'
+  stroke 10 21 '|'
+  stroke 11 21 '|'
+  # E: top, downstroke, middle, bottom.
+  stroke 8 26 '_____'
+  stroke 9 26 '|'
+  stroke 10 26 '|---'
+  stroke 11 26 '|'
+  stroke 12 26 '|____'
+  # N: left, diagonals, right.
+  stroke 8 35 '|'
+  stroke 9 35 '|'
+  stroke 10 35 '|'
+  stroke 11 35 '|'
+  stroke 12 35 '|'
+  stroke 9 36 '\\'
+  stroke 10 37 '\\'
+  stroke 11 38 '\\'
+  stroke 8 40 '|'
+  stroke 9 40 '|'
+  stroke 10 40 '|'
+  stroke 11 40 '|'
+  stroke 12 40 '|'
+  # T: crossbar then stem.
+  stroke 8 45 '_______'
+  stroke 9 48 '|'
+  stroke 10 48 '|'
+  stroke 11 48 '|'
+  stroke 12 48 '|'
+}
+printf '\033[?25l' > "$output"
+i=1
+while [ "$i" -le "$attempts" ]; do
+  printf '\033[2J\033[H' > "$output"
+  printf '\033[5;8HIDENTIUM  /  INITIALISING' > "$output"
+  printf '\033[15;8HLoading attempt %s of %s' "$i" "$attempts" > "$output"
+  draw_ident
+  /bin/sleep 0.18
+  i=$((i + 1))
 done
-printf '\n\n       Experimental developer boot\n\033[?25h' > "$output"
+printf '\033[17;8HDeveloper preview boot\033[?25h\n' > "$output"
