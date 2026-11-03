@@ -19,7 +19,7 @@ jobs:
       - name: Install VM disk creation tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y libguestfs-tools grub-efi-amd64-bin grub-common busybox-static cpio e2fsprogs
+          sudo apt-get install -y libguestfs-tools grub-efi-amd64-bin grub-common busybox-static cpio e2fsprogs qemu-system-x86 ovmf
       - name: Build independent rootfs
         run: |
           mkdir -p build
@@ -52,6 +52,27 @@ jobs:
           test "$(grep -cx true build/installed-layout.txt)" -eq 4
           grep -Fq /dev/sda1 build/installed-layout.txt
           grep -Fq /dev/sda2 build/installed-layout.txt
+      - name: Boot installed UEFI disk in isolated QEMU
+        run: |
+          set -euo pipefail
+          firmware=""
+          for candidate in /usr/share/OVMF/OVMF_CODE_4M.fd /usr/share/OVMF/OVMF_CODE.fd; do
+            if [ -f "$candidate" ]; then firmware="$candidate"; break; fi
+          done
+          test -n "$firmware"
+          set +e
+          timeout 90s qemu-system-x86_64 -machine q35 -m 1024 -smp 2 -display none -monitor none -no-reboot -nic none \
+            -serial file:build/uefi-boot.log -bios "$firmware" \
+            -drive file=build/identium-installer-test.img,format=raw,if=virtio >/dev/null 2>build/qemu-stderr.log
+          code=$?
+          set -e
+          echo "QEMU exit code: $code"
+          grep -Fq 'IDENT OS | independent minimal rootfs | experimental' build/uefi-boot.log || {
+            tail -100 build/uefi-boot.log || true
+            cat build/qemu-stderr.log
+            exit 1
+          }
+          echo 'PASS: installed UEFI disk launched IDENTIUM PID 1'
       - name: Publish layout evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -59,6 +80,8 @@ jobs:
           name: identium-vm-installer-layout-evidence
           path: |
             build/installed-layout.txt
+            build/uefi-boot.log
+            build/qemu-stderr.log
             build/identium-installer-test.img.sha256
           if-no-files-found: warn
           retention-days: 7
