@@ -1,0 +1,64 @@
+name: IDENTIUM VM Installer Integration
+on:
+  pull_request:
+    paths:
+      - 'independent/install-vm-image.sh'
+      - 'independent/init'
+      - 'independent/build-rootfs.sh'
+      - 'independent/validate-rootfs.py'
+      - '.github/workflows/identium-installer.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-and-inspect-uefi-disk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install VM disk creation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libguestfs-tools grub-efi-amd64-bin grub-common busybox-static cpio e2fsprogs
+      - name: Build independent rootfs
+        run: |
+          mkdir -p build
+          export BUSYBOX_STATIC="$(command -v busybox)"
+          export BUSYBOX_SHA256="$(sha256sum "$BUSYBOX_STATIC" | cut -d' ' -f1)"
+          bash independent/build-rootfs.sh build/identium-rootfs.tar.gz
+          bash independent/build-initrd.sh build/identium-rootfs.tar.gz build/identium-initrd.cpio.gz
+      - name: Prepare a local kernel image for layout testing
+        run: |
+          KERNEL="$(find /boot -maxdepth 1 -name 'vmlinuz-*-generic' -type f | head -1)"
+          test -n "$KERNEL"
+          sudo cp "$KERNEL" build/vmlinuz
+          sudo chmod 0644 build/vmlinuz
+      - name: Create GPT/EFI disk image
+        run: |
+          bash independent/install-vm-image.sh --kernel build/vmlinuz --initrd build/identium-initrd.cpio.gz --rootfs build/identium-rootfs.tar.gz --output build/identium-installer-test.img --size-mib 1024
+      - name: Inspect installed partitions and files
+        run: |
+          guestfish --ro -a build/identium-installer-test.img <<'GUESTFISH' > build/installed-layout.txt
+          run
+          list-partitions
+          mount /dev/sda2 /
+          mount /dev/sda1 /boot/efi
+          is-file /boot/vmlinuz
+          is-file /boot/initrd.gz
+          is-file /boot/efi/EFI/BOOT/BOOTX64.EFI
+          is-file /init
+          GUESTFISH
+          cat build/installed-layout.txt
+          test "$(grep -cx true build/installed-layout.txt)" -eq 4
+          grep -Fq /dev/sda1 build/installed-layout.txt
+          grep -Fq /dev/sda2 build/installed-layout.txt
+      - name: Publish layout evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: identium-vm-installer-layout-evidence
+          path: |
+            build/installed-layout.txt
+            build/identium-installer-test.img.sha256
+          if-no-files-found: warn
+          retention-days: 7
