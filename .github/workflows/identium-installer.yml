@@ -19,7 +19,7 @@ jobs:
       - name: Install VM disk creation tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y libguestfs-tools grub-efi-amd64-bin grub-common busybox-static cpio e2fsprogs qemu-system-x86 ovmf
+          sudo apt-get install -y libguestfs-tools grub-efi-amd64-bin grub-common busybox-static cpio e2fsprogs qemu-system-x86 ovmf linux-image-generic
       - name: Build independent rootfs
         run: |
           mkdir -p build
@@ -30,6 +30,7 @@ jobs:
       - name: Prepare a local kernel image for layout testing
         run: |
           KERNEL="$(find /boot -maxdepth 1 -name 'vmlinuz-*-generic' -type f | head -1)"
+          if [ -z "$KERNEL" ]; then KERNEL="$(find /boot -maxdepth 1 -name 'vmlinuz-*' -type f | head -1)"; fi
           test -n "$KERNEL"
           sudo cp "$KERNEL" build/vmlinuz
           sudo chmod 0644 build/vmlinuz
