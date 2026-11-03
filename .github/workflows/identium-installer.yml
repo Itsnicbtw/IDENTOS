@@ -19,7 +19,7 @@ jobs:
       - name: Install VM disk creation tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y libguestfs-tools grub-efi-amd64-bin grub-common busybox-static cpio e2fsprogs qemu-system-x86 ovmf linux-image-generic
+          sudo apt-get install -y libguestfs-tools grub-efi-amd64-bin grub-common busybox-static cpio e2fsprogs qemu-system-x86 ovmf linux-image-generic linux-modules-extra-$(uname -r) || sudo apt-get install -y libguestfs-tools grub-efi-amd64-bin grub-common busybox-static cpio e2fsprogs qemu-system-x86 ovmf linux-image-generic
       - name: Build independent rootfs
         run: |
           mkdir -p build
@@ -34,6 +34,12 @@ jobs:
           test -n "$KERNEL"
           sudo cp "$KERNEL" build/vmlinuz
           sudo chmod 0644 build/vmlinuz
+      - name: Diagnose libguestfs appliance
+        run: |
+          ls -lah /boot/vmlinuz* || true
+          ls -d /lib/modules/* || true
+          sudo apt-get install -y supermin
+          LIBGUESTFS_DEBUG=1 libguestfs-test-tool >build/libguestfs-diagnostic.log 2>&1 || { tail -100 build/libguestfs-diagnostic.log; exit 1; }
       - name: Create GPT/EFI disk image
         run: |
           bash independent/install-vm-image.sh --kernel build/vmlinuz --initrd build/identium-initrd.cpio.gz --rootfs build/identium-rootfs.tar.gz --output build/identium-installer-test.img --size-mib 1024
@@ -83,6 +89,7 @@ jobs:
             build/installed-layout.txt
             build/uefi-boot.log
             build/qemu-stderr.log
+            build/libguestfs-diagnostic.log
             build/identium-installer-test.img.sha256
           if-no-files-found: warn
           retention-days: 7
