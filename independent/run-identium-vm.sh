@@ -22,7 +22,7 @@ for candidate in /usr/share/OVMF/OVMF_CODE_4M.fd /usr/share/OVMF/OVMF_CODE.fd /u
   if [[ -f "$candidate" ]]; then firmware="$candidate"; break; fi
 done
 [[ -n "$firmware" ]] || { echo 'OVMF UEFI firmware not found. Install ovmf.' >&2; exit 2; }
-args=(-machine q35 -m "$memory" -smp 2 -bios "$firmware" -nic none)
+args=(-machine q35 -m "$memory" -smp 2 -bios "$firmware" -nic none -serial mon:stdio)
 if [[ -n "$disk" ]]; then
   [[ "$disk" == *.img && -f "$disk" && ! -L "$disk" && "$disk" != /dev/* ]] || { echo 'Disk must be an existing .img file' >&2; exit 2; }
   args+=(-drive "file=$disk,if=virtio,format=raw")
@@ -31,4 +31,5 @@ else
   args+=(-cdrom "$iso" -boot d)
 fi
 echo 'Launching isolated IDENTIUM VM (no network, no physical disks).'
+echo 'If the guest uses a serial console, interact with it in this terminal.'
 exec qemu-system-x86_64 "${args[@]}"
