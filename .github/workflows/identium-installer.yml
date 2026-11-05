@@ -39,6 +39,8 @@ jobs:
           ls -lah /boot/vmlinuz* || true
           ls -d /lib/modules/* || true
           sudo apt-get install -y supermin
+          # Hosted runner kernels are not always world-readable; supermin runs unprivileged.
+          sudo find /boot -maxdepth 1 -type f -name 'vmlinuz-*' -exec chmod a+r {} +
           LIBGUESTFS_DEBUG=1 libguestfs-test-tool >build/libguestfs-diagnostic.log 2>&1 || { tail -100 build/libguestfs-diagnostic.log; exit 1; }
       - name: Create GPT/EFI disk image
         run: |
