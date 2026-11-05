@@ -82,6 +82,17 @@ jobs:
             exit 1
           }
           echo 'PASS: installed UEFI disk launched IDENTIUM PID 1'
+      - name: Publish boot-tested disposable VM image
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: identium-uefi-vm-developer-preview
+          path: |
+            build/identium-installer-test.img
+            build/identium-installer-test.img.sha256
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 7
       - name: Publish layout evidence
         if: always()
         uses: actions/upload-artifact@v4
