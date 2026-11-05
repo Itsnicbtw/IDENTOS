@@ -71,6 +71,7 @@ jobs:
           python3 tests/test-identium-bundle.py
       - name: Check IDENTIUM VM installer and Wine launcher safeguards
         run: bash tests/test-identium-installer-and-exe.sh
+          bash tests/test-identium-vm-launch.sh
       - name: Validate scripts and initramfs
         run: |
           bash -n scripts/*.sh
