@@ -8,6 +8,17 @@ export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 /bin/mount -t tmpfs tmpfs /tmp
 /bin/boot-splash || true
 echo 'IDENT OS | independent minimal rootfs | experimental'
+# Persistence is opt-in and mounted at /persist, never replacing the initramfs root.
+case " $(/bin/busybox cat /proc/cmdline) " in
+  *" identium.persist=1 "*)
+    /bin/mkdir -p /persist
+    if /bin/mount -t ext4 -L IDENTROOT /persist; then
+      echo 'IDENTIUM: persistent storage available at /persist'
+    else
+      echo 'IDENTIUM: persistent storage unavailable; continuing in RAM'
+    fi
+    ;;
+esac
 echo 'No installer, networking, authenticated logins or graphical desktop.'
 echo 'For isolation, run in QEMU with no host drives attached.'
 while :; do
