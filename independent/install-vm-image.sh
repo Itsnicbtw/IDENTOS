@@ -66,9 +66,9 @@ mount /dev/sda2 /
 tar-in $rootfs / compress:gzip
 mkdir-p /boot
 copy-in $kernel /boot
-mv /boot/$(basename "$kernel") /boot/vmlinuz
+$( [[ "$(basename "$kernel")" == vmlinuz ]] && printf "# kernel already has final filename" || printf "mv /boot/%s /boot/vmlinuz" "$(basename "$kernel")" )
 copy-in $initrd /boot
-mv /boot/$(basename "$initrd") /boot/initrd.gz
+$( [[ "$(basename "$initrd")" == initrd.gz ]] && printf "# initrd already has final filename" || printf "mv /boot/%s /boot/initrd.gz" "$(basename "$initrd")" )
 mkdir-p /boot/efi
 mount /dev/sda1 /boot/efi
 mkdir-p /boot/efi/EFI/BOOT
