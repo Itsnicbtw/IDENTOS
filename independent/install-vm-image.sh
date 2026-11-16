@@ -48,6 +48,9 @@ GRUB
 grub-mkstandalone -O x86_64-efi -o "$tmp/BOOTX64.EFI" \
   --modules="part_gpt fat ext2 normal linux search search_label" \
   "boot/grub/grub.cfg=$tmp/grub.cfg"
+# Stage deterministic filenames to avoid guestfish moving a source onto itself.
+cp -- "$kernel" "$tmp/identium-kernel-input.bin"
+cp -- "$initrd" "$tmp/identium-initrd-input.bin"
 # no symlinks, existing files or physical devices accepted as output.
 ( set -C; : > "$output" )
 created=1
@@ -65,10 +68,10 @@ set-label /dev/sda2 IDENTROOT
 mount /dev/sda2 /
 tar-in $rootfs / compress:gzip
 mkdir-p /boot
-copy-in $kernel /boot
-$( [[ "$(basename "$kernel")" == vmlinuz ]] && printf "# kernel already has final filename" || printf "mv /boot/%s /boot/vmlinuz" "$(basename "$kernel")" )
-copy-in $initrd /boot
-$( [[ "$(basename "$initrd")" == initrd.gz ]] && printf "# initrd already has final filename" || printf "mv /boot/%s /boot/initrd.gz" "$(basename "$initrd")" )
+copy-in $tmp/identium-kernel-input.bin /boot
+mv /boot/identium-kernel-input.bin /boot/vmlinuz
+copy-in $tmp/identium-initrd-input.bin /boot
+mv /boot/identium-initrd-input.bin /boot/initrd.gz
 mkdir-p /boot/efi
 mount /dev/sda1 /boot/efi
 mkdir-p /boot/efi/EFI/BOOT
