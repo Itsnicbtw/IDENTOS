@@ -69,7 +69,21 @@ npm
 nano
 vim
 podman
+wine
+wine64
 EOF
+install -m 0755 "$ROOT/independent/identium-run-exe" config/includes.chroot/usr/local/bin/identium-run-exe
+cat > config/includes.chroot/usr/share/applications/identium-wine.desktop <<'WINE_DESKTOP'
+[Desktop Entry]
+Type=Application
+Name=Run Windows Application (Wine)
+Comment=Runs trusted Windows executables via Wine; no sandbox protection
+Exec=identium-run-exe %f
+Terminal=false
+Categories=Utility;
+MimeType=application/x-ms-dos-executable;application/vnd.microsoft.portable-executable;
+NoDisplay=false
+WINE_DESKTOP
 cat > config/includes.chroot/etc/identos/theme.xml <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <channel name="xsettings" version="1.0">

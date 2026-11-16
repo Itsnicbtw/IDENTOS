@@ -1,0 +1,13 @@
+#!/bin/sh
+# Windows compatibility launcher for IDENT desktop, backed by Wine.
+set -eu
+if [ "$#" -lt 1 ]; then
+  echo 'Usage: identium-run-exe PROGRAM.exe [arguments...]' >&2
+  exit 2
+fi
+exe="$1"; shift
+case "$exe" in *.exe|*.EXE) ;; *) echo 'Expected a Windows .exe file' >&2; exit 2;; esac
+[ -f "$exe" ] || { echo 'Executable does not exist' >&2; exit 2; }
+command -v wine >/dev/null 2>&1 || { echo 'Wine not installed (not available in independent minimal rootfs)' >&2; exit 127; }
+# Wine is NOT a security sandbox: only run trusted programs.
+exec wine "$exe" "$@"
